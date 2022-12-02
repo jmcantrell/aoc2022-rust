@@ -12,19 +12,6 @@ enum Shape {
     Scissors,
 }
 
-impl TryFrom<Key> for Shape {
-    type Error = Key;
-
-    fn try_from(c: Key) -> Result<Self, Self::Error> {
-        match c {
-            'A' => Ok(Self::Rock),
-            'B' => Ok(Self::Paper),
-            'C' => Ok(Self::Scissors),
-            _ => Err(c),
-        }
-    }
-}
-
 impl Shape {
     fn that_beats(shape: Self) -> Self {
         match shape {
@@ -59,11 +46,53 @@ impl Shape {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+impl TryFrom<Key> for Shape {
+    type Error = Key;
+
+    fn try_from(c: Key) -> Result<Self, Self::Error> {
+        match c {
+            'A' => Ok(Self::Rock),
+            'B' => Ok(Self::Paper),
+            'C' => Ok(Self::Scissors),
+            _ => Err(c),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
 enum Outcome {
     Lose,
     Draw,
     Win,
+}
+
+impl Outcome {
+    fn determine(shape1: Shape, shape2: Shape) -> (Self, Round) {
+        let score1 = shape1.score();
+        let score2 = shape2.score();
+
+        match shape1.beats(&shape2) {
+            Some(true) => (Self::Win, (score1 + 6, score2)),
+            Some(false) => (Self::Lose, (score1, score2 + 6)),
+            None => (Self::Draw, (score1 + 3, score2 + 3)),
+        }
+    }
+
+    fn predict(&self, shape: Shape) -> Shape {
+        match self {
+            Outcome::Draw => shape,
+            Outcome::Win => Shape::that_beats(shape),
+            Outcome::Lose => Shape::that_is_beaten_by(shape),
+        }
+    }
+
+    fn opposite(&self) -> Self {
+        match self {
+            Outcome::Win => Outcome::Lose,
+            Outcome::Lose => Outcome::Win,
+            Outcome::Draw => Outcome::Draw,
+        }
+    }
 }
 
 impl TryFrom<Key> for Outcome {
@@ -88,21 +117,16 @@ fn main() {
             let mut keys = line.split_whitespace().map(|s| s.chars().next().unwrap());
 
             let shape1: Shape = keys.next().unwrap().try_into().unwrap();
-            let outcome: Outcome = keys.next().unwrap().try_into().unwrap();
-            let shape2 = match outcome {
-                Outcome::Draw => shape1,
-                Outcome::Win => Shape::that_beats(shape1),
-                Outcome::Lose => Shape::that_is_beaten_by(shape1),
-            };
 
-            let score1 = shape1.score();
-            let score2 = shape2.score();
+            let my_outcome: Outcome = keys.next().unwrap().try_into().unwrap();
 
-            match shape1.beats(&shape2) {
-                Some(true) => (score1 + 6, score2),
-                Some(false) => (score1, score2 + 6),
-                None => (score1 + 3, score2 + 3),
-            }
+            let shape2 = my_outcome.predict(shape1);
+
+            let (their_outcome, round) = Outcome::determine(shape1, shape2);
+
+            assert_eq!(my_outcome, their_outcome.opposite());
+
+            round
         })
         .collect();
 
