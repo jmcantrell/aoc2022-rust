@@ -53,7 +53,39 @@ fn main() -> anyhow::Result<()> {
         .map(find_common_priority)
         .collect::<Result<Vec<_>, _>>()?;
 
-    dbg!(priorities.iter().sum::<usize>());
+    let sum_of_priorities: usize = priorities.iter().sum();
+
+    dbg!(sum_of_priorities);
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn it_works() -> anyhow::Result<()> {
+        let input = concat!(
+            "vJrwpWtwJgWrhcsFMMfFFhFp\n",
+            "jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL\n",
+            "PmmdzqPrVvPwwTWBwg\n",
+            "wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn\n",
+            "ttgJtRGJQctTZtZT\n",
+            "CrZsJsPPZsGzwwsLwLmpwMDw\n",
+        );
+
+        let elves: Vec<_> = input.lines().collect();
+
+        let priorities = elves
+            .chunks(GROUP_SIZE)
+            .map(find_common_priority)
+            .collect::<Result<Vec<_>, _>>()?;
+
+        let sum_of_priorities: usize = priorities.iter().sum();
+
+        assert_eq!(sum_of_priorities, 70);
+
+        Ok(())
+    }
 }

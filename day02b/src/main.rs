@@ -4,7 +4,6 @@ use std::fs;
 
 type Key = char;
 type Score = usize;
-type Round = (Score, Score);
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 enum Shape {
@@ -14,7 +13,7 @@ enum Shape {
 }
 
 impl Shape {
-    fn that_beats(shape: Self) -> Self {
+    fn that_beats(shape: &Self) -> Self {
         match shape {
             Self::Rock => Self::Paper,
             Self::Paper => Self::Scissors,
@@ -22,7 +21,7 @@ impl Shape {
         }
     }
 
-    fn that_is_beaten_by(shape: Self) -> Self {
+    fn that_is_beaten_by(shape: &Self) -> Self {
         match shape {
             Self::Rock => Self::Scissors,
             Self::Paper => Self::Rock,
@@ -34,7 +33,7 @@ impl Shape {
         if self == other {
             None
         } else {
-            Some(*self == Shape::that_beats(*other))
+            Some(*self == Shape::that_beats(other))
         }
     }
 
@@ -70,20 +69,20 @@ enum Outcome {
 }
 
 impl Outcome {
-    fn determine(shape1: Shape, shape2: Shape) -> (Self, Round) {
+    fn determine(shape1: &Shape, shape2: &Shape) -> (Self, (Score, Score)) {
         let score1 = shape1.score();
         let score2 = shape2.score();
 
-        match shape1.beats(&shape2) {
+        match shape1.beats(shape2) {
             Some(true) => (Self::Win, (score1 + 6, score2)),
             Some(false) => (Self::Lose, (score1, score2 + 6)),
             None => (Self::Draw, (score1 + 3, score2 + 3)),
         }
     }
 
-    fn predict(&self, shape: Shape) -> Shape {
+    fn predict(&self, shape: &Shape) -> Shape {
         match self {
-            Outcome::Draw => shape,
+            Outcome::Draw => shape.clone(),
             Outcome::Win => Shape::that_beats(shape),
             Outcome::Lose => Shape::that_is_beaten_by(shape),
         }
@@ -113,54 +112,79 @@ impl TryFrom<Key> for Outcome {
     }
 }
 
-fn main() -> anyhow::Result<()> {
-    let input = fs::read_to_string("input.txt").unwrap();
-
-    let rounds = input
-        .lines()
+fn parse_plays(s: &str) -> anyhow::Result<Vec<(Shape, Outcome)>> {
+    Ok(s.lines()
         .enumerate()
-        .map(|(line, s)| -> anyhow::Result<Round> {
-            let keys: Vec<_> = s.split_whitespace().collect();
+        .map(|(line, s)| -> anyhow::Result<(Shape, Outcome)> {
+            let mut keys = s.split_whitespace();
 
-            if keys.len() != 2 {
-                anyhow::bail!(
-                    "Line {} has unexpected number of words: {} != 2",
-                    line,
-                    keys.len()
-                );
-            }
-
-            let mut keys = keys.iter();
-
-            let shape1: Shape = keys
+            let shape_key = keys
                 .next()
-                .unwrap()
+                .with_context(|| format!("Missing player 1 shape key on line {}", line + 1))?
                 .chars()
                 .next()
-                .with_context(|| format!("Line {} is missing the player 1 shape key", line))?
-                .try_into()?;
+                .unwrap();
 
-            let my_outcome: Outcome = keys
+            let shape1: Shape = shape_key
+                .try_into()
+                .with_context(|| format!("Unable to get player 1 shape on line {}", line + 1))?;
+
+            let outcome_key = keys
                 .next()
-                .unwrap()
+                .with_context(|| format!("Missing outcome key on line {}", line + 1))?
                 .chars()
                 .next()
-                .with_context(|| format!("Line {} is missing the outcome key", line))?
-                .try_into()?;
+                .unwrap();
 
-            let shape2 = my_outcome.predict(shape1);
+            let my_outcome: Outcome = outcome_key
+                .try_into()
+                .with_context(|| format!("Unable to get outcome on line {}", line + 1,))?;
 
-            let (their_outcome, round) = Outcome::determine(shape1, shape2);
-
-            assert_eq!(my_outcome, their_outcome.opposite());
-
-            Ok(round)
+            Ok((shape1, my_outcome))
         })
-        .collect::<Result<Vec<_>, _>>()?;
+        .collect::<Result<Vec<_>, _>>()?)
+}
 
-    let my_total_score: Score = rounds.iter().map(|(_, score2)| score2).sum();
+fn play_games(plays: &Vec<(Shape, Outcome)>) -> Vec<(Score, Score)> {
+    plays
+        .iter()
+        .map(|(shape1, my_outcome)| {
+            let shape2 = my_outcome.predict(shape1);
+            let (their_outcome, round) = Outcome::determine(shape1, &shape2);
+            assert_eq!(my_outcome, &their_outcome.opposite());
+            round
+        })
+        .collect()
+}
+
+fn main() -> anyhow::Result<()> {
+    let input = fs::read_to_string("input.txt")?;
+
+    let plays = parse_plays(&input)?;
+    let scores = play_games(&plays);
+
+    let my_total_score: Score = scores.iter().map(|(_, score2)| score2).sum();
 
     dbg!(&my_total_score);
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn it_works() -> anyhow::Result<()> {
+        let input = "A Y\nB X\nC Z";
+
+        let plays = parse_plays(&input)?;
+        let scores = play_games(&plays);
+
+        let my_total_score: Score = scores.iter().map(|(_, score2)| score2).sum();
+
+        assert_eq!(my_total_score, 12);
+
+        Ok(())
+    }
 }

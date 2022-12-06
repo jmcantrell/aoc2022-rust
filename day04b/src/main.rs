@@ -61,21 +61,49 @@ impl TryFrom<&str> for Pair {
     }
 }
 
-fn main() -> anyhow::Result<()> {
-    let input = fs::read_to_string("input.txt")?;
-
-    let pairs = input
-        .lines()
+fn parse_pairs(s: &str) -> anyhow::Result<Vec<Pair>> {
+    Ok(s.lines()
         .enumerate()
         .map(|(line, s)| -> anyhow::Result<Pair> {
             Ok(s.try_into()
                 .with_context(|| format!("Unable to parse pair on line {}", line))?)
         })
-        .collect::<Result<Vec<_>, _>>()?;
+        .collect::<Result<Vec<_>, _>>()?)
+}
 
-    let num_pairs_with_redundancy = pairs.into_iter().filter(Pair::has_overlap).count();
+fn main() -> anyhow::Result<()> {
+    let input = fs::read_to_string("input.txt")?;
 
-    dbg!(num_pairs_with_redundancy);
+    let pairs = parse_pairs(&input)?;
+
+    let num_pairs_with_overlap = pairs.into_iter().filter(Pair::has_overlap).count();
+
+    dbg!(num_pairs_with_overlap);
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn it_works() -> anyhow::Result<()> {
+        let input = concat!(
+            "2-4,6-8\n",
+            "2-3,4-5\n",
+            "5-7,7-9\n",
+            "2-8,3-7\n",
+            "6-6,4-6\n",
+            "2-6,4-8\n",
+        );
+
+        let pairs = parse_pairs(&input)?;
+
+        let num_pairs_with_overlap = pairs.into_iter().filter(Pair::has_overlap).count();
+
+        assert_eq!(num_pairs_with_overlap, 4);
+
+        Ok(())
+    }
 }

@@ -147,11 +147,10 @@ impl TryFrom<&str> for Command {
     }
 }
 
-fn main() -> anyhow::Result<()> {
-    let input = fs::read_to_string("input.txt")?;
-    let mut chunks = input.split("\n\n");
+fn parse_stacks_and_commands(s: &str) -> anyhow::Result<(StackSet, Vec<Command>)> {
+    let mut chunks = s.split("\n\n");
 
-    let mut stacks: StackSet = chunks.next().context("Missing stacks")?.try_into()?;
+    let stacks: StackSet = chunks.next().context("Missing stacks")?.try_into()?;
 
     let commands: Vec<Command> = chunks
         .next()
@@ -159,6 +158,14 @@ fn main() -> anyhow::Result<()> {
         .lines()
         .map(Command::try_from)
         .collect::<Result<Vec<_>, _>>()?;
+
+    Ok((stacks, commands))
+}
+
+fn main() -> anyhow::Result<()> {
+    let input = fs::read_to_string("input.txt")?;
+
+    let (mut stacks, commands) = parse_stacks_and_commands(&input)?;
 
     for command in commands.iter() {
         stacks.exec(&command)?;
@@ -169,4 +176,36 @@ fn main() -> anyhow::Result<()> {
     dbg!(message);
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn it_works() -> anyhow::Result<()> {
+        let input = concat!(
+            "    [D]    \n",
+            "[N] [C]    \n",
+            "[Z] [M] [P]\n",
+            " 1   2   3 \n",
+            "\n",
+            "move 1 from 2 to 1\n",
+            "move 3 from 1 to 3\n",
+            "move 2 from 2 to 1\n",
+            "move 1 from 1 to 2\n",
+        );
+
+        let (mut stacks, commands) = parse_stacks_and_commands(&input)?;
+
+        for command in commands.iter() {
+            stacks.exec(&command)?;
+        }
+
+        let message: String = stacks.top().into_iter().collect();
+
+        assert_eq!(message, "MCD");
+
+        Ok(())
+    }
 }
