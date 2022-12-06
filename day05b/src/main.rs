@@ -1,75 +1,172 @@
+use anyhow::Context;
+use std::convert::TryFrom;
 use std::fs;
 
+const CRATE_WIDTH: usize = 3;
+
 type Crate = char;
-type Stack = Vec<Crate>;
-type Stacks = Vec<Stack>;
-type Instruction = (usize, usize, usize);
-type Instructions = Vec<Instruction>;
 
-fn parse_stacks(s: &str) -> Stacks {
-    let mut lines = s.lines().rev();
+#[derive(Debug)]
+struct StackSet(Vec<Vec<Crate>>);
 
-    let mut columns: Vec<usize> = Default::default();
-    let mut stacks: Stacks = Default::default();
+impl StackSet {
+    fn exec(&mut self, command: &Command) -> anyhow::Result<()> {
+        match command {
+            Command::Move { count, from, to } => {
+                let mut buffer: Vec<Crate> = Default::default();
 
-    for (i, c) in lines.next().unwrap().chars().enumerate() {
-        if !c.is_whitespace() {
-            columns.push(i);
-            stacks.push(Default::default());
+                for _ in 0..*count {
+                    buffer.push(
+                        self.0[*from - 1]
+                            .pop()
+                            .with_context(|| format!("Stack {} is empty", from))?,
+                    );
+                }
+
+                while !buffer.is_empty() {
+                    self.0[*to - 1].push(buffer.pop().unwrap());
+                }
+            }
         }
+
+        Ok(())
     }
 
-    for line in lines {
-        for (i, &column) in columns.iter().enumerate() {
-            let c = line.chars().nth(column).unwrap();
-            if !c.is_whitespace() {
-                stacks[i].push(c);
+    fn top(&self) -> Vec<&Crate> {
+        self.0
+            .iter()
+            .map(|stack| stack.last().unwrap_or(&' '))
+            .collect()
+    }
+}
+
+impl TryFrom<&str> for StackSet {
+    type Error = anyhow::Error;
+
+    fn try_from(s: &str) -> Result<Self, Self::Error> {
+        let mut lines = s.lines().rev();
+        let header = lines.next().context("Header is missing")?;
+        let num_stacks = header.split_whitespace().count();
+
+        let mut stacks: Vec<Vec<Crate>> = vec![Default::default(); num_stacks];
+
+        let expected_line_length = num_stacks * (CRATE_WIDTH + 1) - 1;
+
+        for (line, s) in lines.enumerate() {
+            if s.len() != expected_line_length {
+                anyhow::bail!(
+                    "Expected line length to be {}, but was {} instead",
+                    expected_line_length,
+                    s.len()
+                );
+            }
+
+            let chars: Vec<_> = s.chars().collect();
+
+            for i in 0..num_stacks {
+                let column = i * (CRATE_WIDTH + 1) + 1;
+
+                let mark = chars[column];
+                let open = chars[column - 1];
+                let close = chars[column + 1];
+
+                if open != '[' {
+                    continue;
+                }
+
+                if mark.is_whitespace() {
+                    anyhow::bail!(
+                        "Crate for stack {} on line {} is missing a mark",
+                        i + 1,
+                        line + 1
+                    );
+                }
+
+                if close != ']' {
+                    anyhow::bail!(
+                        "Crate for stack {} on line {} missing a closing `]`",
+                        i + 1,
+                        line + 1
+                    );
+                }
+
+                stacks[i].push(mark);
+            }
+        }
+
+        Ok(Self(stacks))
+    }
+}
+
+#[derive(Debug)]
+enum Command {
+    Move {
+        count: usize,
+        from: usize,
+        to: usize,
+    },
+}
+
+impl TryFrom<&str> for Command {
+    type Error = anyhow::Error;
+
+    fn try_from(s: &str) -> Result<Self, Self::Error> {
+        let mut tokens = s.split_whitespace();
+        let command = tokens.next().context("Missing command")?;
+
+        match command {
+            "move" => {
+                let count: usize = tokens.next().context("Missing count")?.parse()?;
+
+                let from = tokens.next().context("Missing `from` subcommand")?;
+                if from != "from" {
+                    anyhow::bail!("Expected `from` but got {:?} instead", from);
+                }
+
+                let from = tokens
+                    .next()
+                    .context("Missing argument for `from` subcommand")?;
+                let from: usize = from.parse()?;
+
+                let to = tokens.next().context("Missing `to` subcommand")?;
+                if to != "to" {
+                    anyhow::bail!("Expected `to` but got {:?} instead", to);
+                }
+
+                let to = tokens
+                    .next()
+                    .context("Missing argument for `to` subcommand")?;
+                let to: usize = to.parse()?;
+
+                Ok(Command::Move { count, from, to })
+            }
+            _ => {
+                anyhow::bail!("Unknown command {:?}", command);
             }
         }
     }
-
-    stacks
 }
 
-fn parse_instructions(s: &str) -> Instructions {
-    s.lines()
-        .map(|line| {
-            let mut tokens = line.split_whitespace();
-
-            let count: usize = tokens.nth(1).unwrap().parse().unwrap();
-            let from: usize = tokens.nth(1).unwrap().parse().unwrap();
-            let to: usize = tokens.nth(1).unwrap().parse().unwrap();
-
-            (count, from - 1, to - 1)
-        })
-        .collect()
-}
-
-fn rearrange_stacks(stacks: &mut Stacks, instructions: &Instructions) {
-    for (count, from, to) in instructions.iter() {
-        let mut buffer: Vec<Crate> = Default::default();
-
-        for _ in 0..*count {
-            buffer.push(stacks[*from].pop().unwrap());
-        }
-
-        while !buffer.is_empty() {
-            stacks[*to].push(buffer.pop().unwrap());
-        }
-    }
-}
-
-fn main() {
-    let input = fs::read_to_string("input.txt").unwrap();
-
+fn main() -> anyhow::Result<()> {
+    let input = fs::read_to_string("input.txt")?;
     let mut chunks = input.split("\n\n");
 
-    let mut stacks = parse_stacks(chunks.next().unwrap());
-    let instructions = parse_instructions(chunks.next().unwrap());
+    let mut stacks: StackSet = chunks.next().context("Missing stacks")?.try_into()?;
 
-    rearrange_stacks(&mut stacks, &instructions);
+    let commands: Vec<Command> = chunks
+        .next()
+        .context("Missing procedure")?
+        .lines()
+        .map(Command::try_from)
+        .collect::<Result<Vec<_>, _>>()?;
 
-    let message: String = stacks.iter().map(|stack| stack.last().unwrap()).collect();
+    for command in commands.iter() {
+        stacks.exec(&command)?;
+    }
+
+    let message: String = stacks.top().into_iter().collect();
 
     dbg!(message);
+
+    Ok(())
 }
