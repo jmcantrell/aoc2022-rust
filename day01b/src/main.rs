@@ -1,6 +1,5 @@
 use std::convert::TryFrom;
 use std::fs;
-use std::num::ParseIntError;
 
 type Snack = usize;
 
@@ -15,19 +14,8 @@ impl Elf {
     }
 }
 
-#[derive(Debug)]
-enum ParseElfError {
-    InvalidCalories(ParseIntError),
-}
-
-impl From<ParseIntError> for ParseElfError {
-    fn from(err: ParseIntError) -> Self {
-        ParseElfError::InvalidCalories(err)
-    }
-}
-
 impl TryFrom<&str> for Elf {
-    type Error = ParseElfError;
+    type Error = anyhow::Error;
 
     fn try_from(s: &str) -> Result<Self, Self::Error> {
         Ok(Self {
@@ -39,14 +27,13 @@ impl TryFrom<&str> for Elf {
     }
 }
 
-fn main() {
-    let input = fs::read_to_string("input.txt").unwrap();
+fn main() -> anyhow::Result<()> {
+    let input = fs::read_to_string("input.txt")?;
 
     let mut elves = input
         .split("\n\n")
         .map(|chunk| chunk.try_into())
-        .collect::<Result<Vec<Elf>, _>>()
-        .unwrap();
+        .collect::<Result<Vec<Elf>, _>>()?;
 
     elves.sort_by_key(|elf| elf.total_calories());
 
@@ -63,15 +50,6 @@ fn main() {
         "The top {} elves with the most calories have {} calories",
         count, total_calories
     );
-}
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_invalid_calories_error() {
-        let res = TryInto::<Elf>::try_into("bogus");
-        assert!(matches!(res, Err(ParseElfError::InvalidCalories(_))));
-    }
+    Ok(())
 }

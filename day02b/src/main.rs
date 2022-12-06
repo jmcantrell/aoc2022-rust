@@ -1,3 +1,4 @@
+use anyhow::Context;
 use std::convert::TryFrom;
 use std::fs;
 
@@ -47,14 +48,16 @@ impl Shape {
 }
 
 impl TryFrom<Key> for Shape {
-    type Error = Key;
+    type Error = anyhow::Error;
 
-    fn try_from(c: Key) -> Result<Self, Self::Error> {
-        match c {
+    fn try_from(key: Key) -> Result<Self, Self::Error> {
+        match key {
             'A' => Ok(Self::Rock),
             'B' => Ok(Self::Paper),
             'C' => Ok(Self::Scissors),
-            _ => Err(c),
+            _ => {
+                anyhow::bail!("Invalid shape key {:?}", key);
+            }
         }
     }
 }
@@ -96,29 +99,54 @@ impl Outcome {
 }
 
 impl TryFrom<Key> for Outcome {
-    type Error = Key;
+    type Error = anyhow::Error;
 
-    fn try_from(c: Key) -> Result<Self, Self::Error> {
-        match c {
+    fn try_from(key: Key) -> Result<Self, Self::Error> {
+        match key {
             'X' => Ok(Self::Lose),
             'Y' => Ok(Self::Draw),
             'Z' => Ok(Self::Win),
-            _ => Err(c),
+            _ => {
+                anyhow::bail!("Invalid outcome key {:?}", key);
+            }
         }
     }
 }
 
-fn main() {
+fn main() -> anyhow::Result<()> {
     let input = fs::read_to_string("input.txt").unwrap();
 
-    let rounds: Vec<Round> = input
+    let rounds = input
         .lines()
-        .map(|line| {
-            let mut keys = line.split_whitespace().map(|s| s.chars().next().unwrap());
+        .enumerate()
+        .map(|(line, s)| -> anyhow::Result<Round> {
+            let keys: Vec<_> = s.split_whitespace().collect();
 
-            let shape1: Shape = keys.next().unwrap().try_into().unwrap();
+            if keys.len() != 2 {
+                anyhow::bail!(
+                    "Line {} has unexpected number of words: {} != 2",
+                    line,
+                    keys.len()
+                );
+            }
 
-            let my_outcome: Outcome = keys.next().unwrap().try_into().unwrap();
+            let mut keys = keys.iter();
+
+            let shape1: Shape = keys
+                .next()
+                .unwrap()
+                .chars()
+                .next()
+                .with_context(|| format!("Line {} is missing the player 1 shape key", line))?
+                .try_into()?;
+
+            let my_outcome: Outcome = keys
+                .next()
+                .unwrap()
+                .chars()
+                .next()
+                .with_context(|| format!("Line {} is missing the outcome key", line))?
+                .try_into()?;
 
             let shape2 = my_outcome.predict(shape1);
 
@@ -126,11 +154,13 @@ fn main() {
 
             assert_eq!(my_outcome, their_outcome.opposite());
 
-            round
+            Ok(round)
         })
-        .collect();
+        .collect::<Result<Vec<_>, _>>()?;
 
     let my_total_score: Score = rounds.iter().map(|(_, score2)| score2).sum();
 
     dbg!(&my_total_score);
+
+    Ok(())
 }

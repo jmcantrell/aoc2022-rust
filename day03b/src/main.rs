@@ -3,23 +3,26 @@ use std::fs;
 const NUM_ITEM_TYPES: usize = 26 * 2;
 const GROUP_SIZE: usize = 3;
 
-fn get_item_priority(item: char) -> usize {
-    1 + (item as usize)
+fn get_item_priority(item: char) -> anyhow::Result<usize> {
+    Ok(1 + (item as usize)
         - match item {
             'a'..='z' => 97,
             'A'..='Z' => 39,
-            _ => panic!("invalid character"),
-        }
+            _ => {
+                anyhow::bail!("Invalid item `{}`", item);
+            }
+        })
 }
 
-fn find_common_priority(rucksacks: &[&str]) -> usize {
+fn find_common_priority(rucksacks: &[&str]) -> anyhow::Result<usize> {
     let mut counts = [0; NUM_ITEM_TYPES];
 
     for &rucksack in rucksacks {
         let mut checklist = [false; NUM_ITEM_TYPES];
 
         for item in rucksack.chars() {
-            checklist[get_item_priority(item) - 1] = true;
+            let priority = get_item_priority(item)?;
+            checklist[priority - 1] = true;
         }
 
         for i in 0..NUM_ITEM_TYPES {
@@ -33,19 +36,24 @@ fn find_common_priority(rucksacks: &[&str]) -> usize {
 
     for (i, &count) in counts.iter().enumerate() {
         if count >= n {
-            return i + 1;
+            return Ok(i + 1);
         }
     }
 
     unreachable!()
 }
 
-fn main() {
-    let input = fs::read_to_string("input.txt").unwrap();
+fn main() -> anyhow::Result<()> {
+    let input = fs::read_to_string("input.txt")?;
 
     let elves: Vec<_> = input.lines().collect();
 
-    let sum_of_priorities: usize = elves.chunks(GROUP_SIZE).map(find_common_priority).sum();
+    let priorities = elves
+        .chunks(GROUP_SIZE)
+        .map(find_common_priority)
+        .collect::<Result<Vec<_>, _>>()?;
 
-    dbg!(sum_of_priorities);
+    dbg!(priorities.iter().sum::<usize>());
+
+    Ok(())
 }

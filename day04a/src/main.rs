@@ -1,19 +1,7 @@
+use anyhow::Context;
+use std::convert::TryFrom;
 use std::fs;
-use std::num::ParseIntError;
 use std::ops::RangeInclusive;
-use std::str::FromStr;
-
-#[derive(Debug)]
-enum ParseSectionsError {
-    NoHyphen,
-    InvalidBound(ParseIntError),
-}
-
-impl From<ParseIntError> for ParseSectionsError {
-    fn from(err: ParseIntError) -> Self {
-        Self::InvalidBound(err)
-    }
-}
 
 #[derive(Debug)]
 struct Sections(RangeInclusive<usize>);
@@ -24,32 +12,23 @@ impl Sections {
     }
 }
 
-impl FromStr for Sections {
-    type Err = ParseSectionsError;
+impl TryFrom<&str> for Sections {
+    type Error = anyhow::Error;
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if !s.contains('-') {
-            return Err(ParseSectionsError::NoHyphen);
-        }
-
+    fn try_from(s: &str) -> Result<Self, Self::Error> {
         let mut split = s.splitn(2, '-');
 
-        let a: usize = split.next().unwrap().parse()?;
-        let b: usize = split.next().unwrap().parse()?;
+        let a: usize = split
+            .next()
+            .context("Missing sections left-hand side")?
+            .parse()?;
+
+        let b: usize = split
+            .next()
+            .context("Missing sections right-hand side")?
+            .parse()?;
 
         Ok(Self(a..=b))
-    }
-}
-
-#[derive(Debug)]
-enum ParsePairError {
-    NoComma,
-    InvalidSections(ParseSectionsError),
-}
-
-impl From<ParseSectionsError> for ParsePairError {
-    fn from(err: ParseSectionsError) -> Self {
-        Self::InvalidSections(err)
     }
 }
 
@@ -62,33 +41,41 @@ impl Pair {
     }
 }
 
-impl FromStr for Pair {
-    type Err = ParsePairError;
+impl TryFrom<&str> for Pair {
+    type Error = anyhow::Error;
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if !s.contains(',') {
-            return Err(ParsePairError::NoComma);
-        }
-
+    fn try_from(s: &str) -> Result<Self, Self::Error> {
         let mut split = s.splitn(2, ',');
 
-        let a: Sections = split.next().unwrap().parse()?;
-        let b: Sections = split.next().unwrap().parse()?;
+        let a: Sections = split
+            .next()
+            .context("Missing first sections range")?
+            .try_into()?;
+
+        let b: Sections = split
+            .next()
+            .context("Missing second sections range")?
+            .try_into()?;
 
         Ok(Self(a, b))
     }
 }
 
-fn main() {
-    let input = fs::read_to_string("input.txt").unwrap();
+fn main() -> anyhow::Result<()> {
+    let input = fs::read_to_string("input.txt")?;
 
-    let pairs: Vec<_> = input
+    let pairs = input
         .lines()
-        .map(Pair::from_str)
-        .collect::<Result<Vec<_>, _>>()
-        .unwrap();
+        .enumerate()
+        .map(|(line, s)| -> anyhow::Result<Pair> {
+            Ok(s.try_into()
+                .with_context(|| format!("Unable to parse pair on line {}", line))?)
+        })
+        .collect::<Result<Vec<_>, _>>()?;
 
     let num_pairs_with_redundancy = pairs.into_iter().filter(Pair::has_redundancy).count();
 
     dbg!(num_pairs_with_redundancy);
+
+    Ok(())
 }
