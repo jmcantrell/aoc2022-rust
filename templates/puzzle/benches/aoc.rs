@@ -2,7 +2,7 @@ use criterion::{black_box, criterion_group, criterion_main, BatchSize, Criterion
 
 use aoc::{Input, Parse, Solve};
 
-use {{NAME}}::aoc::{Parser1, Parser2, Solver1, Solver2};
+use __NAME__::aoc::{Parser1, Parser2, Solver1, Solver2};
 
 const INPUT: Input = include_str!("../input.txt");
 
@@ -16,11 +16,7 @@ fn benchmark<P: Parse, S: Solve<P> + Clone>(c: &mut Criterion, name: &str) {
     });
 
     group.bench_function("solve", |b| {
-        b.iter_batched(
-            || solver.clone(),
-            |solver| solver.solve(),
-            BatchSize::SmallInput,
-        )
+        b.iter_batched(|| solver.clone(), |s| s.solve(), BatchSize::SmallInput)
     });
 
     group.finish();
