@@ -1,11 +1,19 @@
 use std::fmt::Debug;
 
-pub trait Parser {
+pub type Input = &'static str;
+
+pub trait Parse {
     type Parsed: Debug;
-    fn parse(&self) -> Self::Parsed;
+
+    fn new(input: Input) -> Self;
+
+    fn parse(&self) -> anyhow::Result<Self::Parsed>;
 }
 
-pub trait Solver {
+pub trait Solve<P: Parse> {
     type Solution: Debug;
-    fn solve(&self) -> Self::Solution;
+
+    fn new(parsed: P::Parsed) -> Self;
+
+    fn solve(&self) -> anyhow::Result<Self::Solution>;
 }
