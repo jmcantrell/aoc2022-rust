@@ -2,7 +2,7 @@ use criterion::{black_box, criterion_group, criterion_main, BatchSize, Criterion
 
 use aoc::{Input, Parse, Solve};
 
-use template::aoc::{Parser1, Parser2, Solver1, Solver2};
+use {{NAME}}::aoc::{Parser1, Parser2, Solver1, Solver2};
 
 const INPUT: Input = include_str!("../input.txt");
 
