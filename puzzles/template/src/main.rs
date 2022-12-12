@@ -1,6 +1,6 @@
 use aoc::{Input, Parse, Solve};
 
-use day00::aoc::{Parser1, Parser2, Solver1, Solver2};
+use template::aoc::{Parser1, Parser2, Solver1, Solver2};
 
 const INPUT: Input = include_str!("../input.txt");
 
