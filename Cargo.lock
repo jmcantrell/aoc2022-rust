@@ -190,15 +190,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "day00"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "aoc",
- "criterion",
-]
-
-[[package]]
 name = "day01"
 version = "0.1.0"
 dependencies = [
