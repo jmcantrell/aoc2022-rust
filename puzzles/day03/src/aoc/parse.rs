@@ -2,7 +2,7 @@ use anyhow::Context;
 
 use aoc::{Input, Parse};
 
-use crate::puzzle::{parse1, parse2, Parsed1, Parsed2};
+use crate::answer::{parse1, parse2, Parsed1, Parsed2};
 
 #[derive(Debug, Clone)]
 pub struct Parser1(pub Input);

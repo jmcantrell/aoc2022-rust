@@ -24,7 +24,7 @@ pub fn solve2(parsed: &Parsed2) -> anyhow::Result<Solution2> {
 
 #[cfg(test)]
 mod tests {
-    use crate::puzzle::{parse1, parse2};
+    use crate::answer::{parse1, parse2};
 
     const INPUT: &'static str = include_str!("../../input-test.txt");
 

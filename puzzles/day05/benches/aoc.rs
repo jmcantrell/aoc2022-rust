@@ -16,11 +16,7 @@ fn benchmark<P: Parse, S: Solve<P> + Clone>(c: &mut Criterion, name: &str) {
     });
 
     group.bench_function("solve", |b| {
-        b.iter_batched(
-            || solver.clone(),
-            |solver| solver.solve(),
-            BatchSize::SmallInput,
-        )
+        b.iter_batched(|| solver.clone(), |s| s.solve(), BatchSize::SmallInput)
     });
 
     group.finish();

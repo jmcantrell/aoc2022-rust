@@ -1,7 +1,7 @@
 use anyhow::Context;
 
 use crate::core::{find_common_by_chunk, find_common_by_pocket};
-use crate::puzzle::{Parsed1, Parsed2};
+use crate::answer::{Parsed1, Parsed2};
 
 pub type Solution = usize;
 pub type Solution1 = Solution;
@@ -25,7 +25,7 @@ pub fn solve2(parsed: &Parsed2) -> anyhow::Result<Solution2> {
 pub mod tests {
     use aoc::Input;
 
-    use crate::puzzle::{parse1, parse2};
+    use crate::answer::{parse1, parse2};
 
     const INPUT: Input = include_str!("../../input-test.txt");
 

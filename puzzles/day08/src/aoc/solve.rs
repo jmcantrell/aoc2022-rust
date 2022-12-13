@@ -2,7 +2,7 @@ use anyhow::Context;
 
 use aoc::{Parse, Solve};
 
-use crate::puzzle::{solve1, solve2, Solution1, Solution2};
+use crate::answer::{solve1, solve2, Solution1, Solution2};
 
 use super::{Parser1, Parser2};
 

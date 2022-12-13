@@ -20,7 +20,7 @@ pub fn solve2(parsed: &Parsed2) -> anyhow::Result<Solution2> {
 pub mod tests {
     use aoc::Input;
 
-    use crate::puzzle::{parse1, parse2};
+    use crate::answer::{parse1, parse2};
 
     use super::{Solution1, Solution2};
 
