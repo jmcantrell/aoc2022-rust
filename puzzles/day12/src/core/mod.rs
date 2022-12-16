@@ -6,6 +6,3 @@ pub use breadcrumbs::*;
 
 pub mod geometry;
 pub use geometry::*;
-
-pub mod collections;
-pub use collections::*;
