@@ -18,7 +18,7 @@ pub fn solve1(parsed: &Parsed1) -> anyhow::Result<Solution1> {
 pub fn solve2(parsed: &Parsed2) -> anyhow::Result<Solution2> {
     let mut cave = parsed.clone();
 
-    cave.floor = Some(cave.lowest_rock() + 2);
+    cave.floor = Some(cave.lowest_rock + 2);
 
     Ok(cave.fill_with_sand(&START).count())
 }

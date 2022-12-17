@@ -18,6 +18,7 @@ const SAND: &'static str = "o";
 #[derive(Debug, Clone)]
 pub struct CaveMap {
     grid: GraphGrid<Unit>,
+    pub lowest_rock: isize,
     pub floor: Option<isize>,
 }
 
@@ -31,15 +32,11 @@ impl CaveMap {
             if location.row >= floor {
                 return Some(false);
             }
-        } else if location.row >= self.lowest_rock() {
+        } else if location.row >= self.lowest_rock {
             return None;
         }
 
         Some(true)
-    }
-
-    pub fn lowest_rock(&self) -> isize {
-        self.grid.bottom()
     }
 
     pub fn drop_sand(&mut self, start: &Location) -> Option<Location> {
@@ -157,14 +154,18 @@ impl TryFrom<&str> for CaveMap {
         }
 
         let mut grid = GraphGrid::new();
+        let mut lowest_rock = 0;
 
         for (i, line) in s.lines().enumerate() {
             let path = stroke_path(line).with_context(|| format!("path number {}", i + 1))?;
             for location in path.into_iter() {
+                if location.row > lowest_rock {
+                    lowest_rock = location.row;
+                }
                 grid.insert(location, Unit::Rock);
             }
         }
 
-        Ok(Self { grid, floor: None })
+        Ok(Self { grid, lowest_rock, floor: None })
     }
 }
