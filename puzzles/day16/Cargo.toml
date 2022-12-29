@@ -6,9 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-anyhow = "1.0"
 aoc = { path = "../../aoc" }
-itertools = "0.10.5"
+anyhow = "1.0"
 regex = "1.7.0"
 
 [dev-dependencies]
