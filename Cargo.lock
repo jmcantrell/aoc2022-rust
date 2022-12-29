@@ -12,6 +12,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "aho-corasick"
+version = "0.7.20"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cc936419f96fa211c1b9166887b38e5e40b19958e5b895be7c1f93adec7071ac"
+dependencies = [
+ "memchr",
+]
+
+[[package]]
 name = "anes"
 version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -307,6 +316,43 @@ dependencies = [
 ]
 
 [[package]]
+name = "day13"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "aoc",
+ "criterion",
+]
+
+[[package]]
+name = "day14"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "aoc",
+ "criterion",
+]
+
+[[package]]
+name = "day15"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "aoc",
+ "criterion",
+]
+
+[[package]]
+name = "day16"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "aoc",
+ "criterion",
+ "regex",
+]
+
+[[package]]
 name = "either"
 version = "1.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -387,6 +433,12 @@ checksum = "abb12e687cfb44aa40f41fc3978ef76448f9b6038cad6aef4259d3c095a2382e"
 dependencies = [
  "cfg-if",
 ]
+
+[[package]]
+name = "memchr"
+version = "2.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2dffe52ecf27772e601905b7522cb4ef790d2cc203488bbd0e2fe85fcb74566d"
 
 [[package]]
 name = "memoffset"
@@ -509,6 +561,8 @@ version = "1.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e076559ef8e241f2ae3479e36f97bd5741c0330689e217ad51ce2c76808b868a"
 dependencies = [
+ "aho-corasick",
+ "memchr",
  "regex-syntax",
 ]
 
