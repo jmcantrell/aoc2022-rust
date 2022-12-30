@@ -4,12 +4,12 @@ pub type Solution = usize;
 pub type Solution1 = Solution;
 pub type Solution2 = Solution;
 
-pub fn solve1(parsed: &Parsed1) -> anyhow::Result<Solution1> {
-    Ok(parsed.iter().filter(|pair| pair.has_redundancy()).count())
+pub fn solve1(pairs: &Parsed1) -> anyhow::Result<Solution1> {
+    Ok(pairs.iter().filter(|pair| pair.has_redundancy()).count())
 }
 
-pub fn solve2(parsed: &Parsed2) -> anyhow::Result<Solution2> {
-    Ok(parsed.iter().filter(|pair| pair.has_overlap()).count())
+pub fn solve2(pairs: &Parsed2) -> anyhow::Result<Solution2> {
+    Ok(pairs.iter().filter(|pair| pair.has_overlap()).count())
 }
 
 #[cfg(test)]

@@ -8,12 +8,12 @@ pub type Solution = usize;
 pub type Solution1 = Solution;
 pub type Solution2 = Solution;
 
-pub fn solve1(parsed: &Parsed1) -> anyhow::Result<Solution1> {
-    Ok(parsed.visibility().visible().count())
+pub fn solve1(tree_patch: &Parsed1) -> anyhow::Result<Solution1> {
+    Ok(tree_patch.visibility().visible().count())
 }
 
-pub fn solve2(parsed: &Parsed2) -> anyhow::Result<Solution2> {
-    Ok(*parsed
+pub fn solve2(tree_patch: &Parsed2) -> anyhow::Result<Solution2> {
+    Ok(*tree_patch
         .scenic_scores()
         .values()
         .max()

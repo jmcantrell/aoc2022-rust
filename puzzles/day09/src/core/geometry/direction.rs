@@ -36,6 +36,7 @@ impl fmt::Display for Direction {
                 Self::Right => 'R',
             }
         )?;
+
         Ok(())
     }
 }

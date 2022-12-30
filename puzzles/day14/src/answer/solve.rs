@@ -11,16 +11,16 @@ const START: Location = Location {
     column: 500,
 };
 
-pub fn solve1(parsed: &Parsed1) -> anyhow::Result<Solution1> {
-    Ok(parsed.clone().fill_with_sand(&START).count())
+pub fn solve1(map: &Parsed1) -> anyhow::Result<Solution1> {
+    Ok(map.clone().fill_with_sand(&START).count())
 }
 
-pub fn solve2(parsed: &Parsed2) -> anyhow::Result<Solution2> {
-    let mut cave = parsed.clone();
+pub fn solve2(map: &Parsed2) -> anyhow::Result<Solution2> {
+    let mut map = map.clone();
 
-    cave.floor = Some(cave.lowest_rock + 2);
+    map.floor = Some(map.lowest_rock + 2);
 
-    Ok(cave.fill_with_sand(&START).count())
+    Ok(map.fill_with_sand(&START).count())
 }
 
 #[cfg(test)]

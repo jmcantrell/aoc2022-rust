@@ -8,12 +8,12 @@ pub type Solution = usize;
 pub type Solution1 = Solution;
 pub type Solution2 = Solution;
 
-pub fn solve1(parsed: &Parsed1) -> anyhow::Result<Solution1> {
-    find_unique_window(parsed.iter(), 4).context("no start-of-packet marker detected")
+pub fn solve1(data: &Parsed1) -> anyhow::Result<Solution1> {
+    find_unique_window(data.iter(), 4).context("no start-of-packet marker detected")
 }
 
-pub fn solve2(parsed: &Parsed2) -> anyhow::Result<Solution2> {
-    find_unique_window(parsed.iter(), 14).context("no start-of-message marker detected")
+pub fn solve2(data: &Parsed2) -> anyhow::Result<Solution2> {
+    find_unique_window(data.iter(), 14).context("no start-of-message marker detected")
 }
 
 #[cfg(test)]

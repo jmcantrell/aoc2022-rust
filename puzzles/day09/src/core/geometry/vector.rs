@@ -10,6 +10,15 @@ pub struct Vector {
     pub magnitude: isize,
 }
 
+impl Vector {
+    pub fn new(direction: Direction, magnitude: isize) -> Self {
+        Self {
+            direction,
+            magnitude,
+        }
+    }
+}
+
 impl fmt::Display for Vector {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{} {}", self.direction, self.magnitude)?;
@@ -53,18 +62,17 @@ mod tests {
     fn identity() {
         macro_rules! test {
             ($direction:expr, $magnitude:expr, $s:expr) => {
-                let vector = Vector {
-                    direction: $direction,
-                    magnitude: $magnitude,
-                };
+                let vector = Vector::new($direction, $magnitude);
                 assert_eq!(vector.to_string(), $s);
                 assert_eq!(Vector::try_from($s).unwrap(), vector);
             };
         }
 
-        test!(Direction::Up, 1, "U 1");
-        test!(Direction::Down, 2, "D 2");
-        test!(Direction::Left, 3, "L 3");
-        test!(Direction::Right, 4, "R 4");
+        use Direction::*;
+
+        test!(Up, 1, "U 1");
+        test!(Down, 2, "D 2");
+        test!(Left, 3, "L 3");
+        test!(Right, 4, "R 4");
     }
 }

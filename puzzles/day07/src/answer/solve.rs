@@ -6,8 +6,8 @@ pub type Solution = usize;
 pub type Solution1 = Solution;
 pub type Solution2 = Solution;
 
-pub fn solve1(parsed: &Parsed1) -> anyhow::Result<Solution1> {
-    let file_system = parsed.reconstruct_file_system()?;
+pub fn solve1(output: &Parsed1) -> anyhow::Result<Solution1> {
+    let file_system = output.reconstruct_file_system()?;
 
     let sizes: Vec<_> = file_system
         .directory_sizes()
@@ -21,8 +21,8 @@ pub fn solve1(parsed: &Parsed1) -> anyhow::Result<Solution1> {
     }
 }
 
-pub fn solve2(parsed: &Parsed2) -> anyhow::Result<Solution2> {
-    let file_system = parsed.reconstruct_file_system()?;
+pub fn solve2(output: &Parsed2) -> anyhow::Result<Solution2> {
+    let file_system = output.reconstruct_file_system()?;
 
     let capacity: usize = 70_000_000;
     let available = capacity - file_system.size();

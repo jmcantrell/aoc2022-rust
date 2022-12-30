@@ -8,15 +8,15 @@ pub type Solution = usize;
 pub type Solution1 = Solution;
 pub type Solution2 = Solution;
 
-pub fn solve1(parsed: &Parsed1) -> anyhow::Result<Solution1> {
-    sum_snacks_by_elf(parsed)
+pub fn solve1(elves: &Parsed1) -> anyhow::Result<Solution1> {
+    sum_snacks_by_elf(elves)
         .into_iter()
         .max()
         .context("no elves")
 }
 
-pub fn solve2(parsed: &Parsed2) -> anyhow::Result<Solution2> {
-    let mut sums = sum_snacks_by_elf(parsed);
+pub fn solve2(elves: &Parsed2) -> anyhow::Result<Solution2> {
+    let mut sums = sum_snacks_by_elf(elves);
     sums.sort();
     sums.reverse();
     Ok(sums.into_iter().take(3).sum())

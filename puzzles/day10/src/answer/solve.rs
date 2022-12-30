@@ -5,11 +5,11 @@ use super::{Parsed1, Parsed2};
 pub type Solution1 = isize;
 pub type Solution2 = String;
 
-pub fn solve1(parsed: &Parsed1) -> anyhow::Result<Solution1> {
+pub fn solve1(program: &Parsed1) -> anyhow::Result<Solution1> {
     let start = 20;
     let step = 40;
 
-    let mut machine = Machine::new(parsed.clone());
+    let mut machine = Machine::new(program.clone());
 
     let signal_strengths = machine
         .run()
@@ -21,9 +21,9 @@ pub fn solve1(parsed: &Parsed1) -> anyhow::Result<Solution1> {
     Ok(signal_strengths.sum())
 }
 
-pub fn solve2(parsed: &Parsed2) -> anyhow::Result<Solution2> {
+pub fn solve2(program: &Parsed2) -> anyhow::Result<Solution2> {
     let mut display = String::new();
-    let mut machine = Machine::new(parsed.clone());
+    let mut machine = Machine::new(program.clone());
 
     let width = 40;
 

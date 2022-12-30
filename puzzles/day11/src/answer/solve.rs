@@ -27,18 +27,18 @@ where
     inspections.iter().rev().take(2).product()
 }
 
-pub fn solve1(parsed: &Parsed1) -> anyhow::Result<Solution1> {
-    Ok(monkey_business(parsed, 20, |item| item / 3))
+pub fn solve1(troop: &Parsed1) -> anyhow::Result<Solution1> {
+    Ok(monkey_business(troop, 20, |item| item / 3))
 }
 
-pub fn solve2(parsed: &Parsed2) -> anyhow::Result<Solution2> {
-    let modulo: usize = parsed
+pub fn solve2(troop: &Parsed2) -> anyhow::Result<Solution2> {
+    let modulo: usize = troop
         .monkeys
         .iter()
         .map(|monkey| monkey.test.divisible_by)
         .product();
 
-    Ok(monkey_business(parsed, 10_000, |item| item % modulo))
+    Ok(monkey_business(troop, 10_000, |item| item % modulo))
 }
 
 #[cfg(test)]
@@ -51,13 +51,13 @@ pub mod tests {
 
     #[test]
     fn solve1() -> anyhow::Result<()> {
-        assert_eq!(super::solve1(&parse1(INPUT)?)?, 10605);
+        assert_eq!(super::solve1(&parse1(INPUT)?)?, 10_605);
         Ok(())
     }
 
     #[test]
     fn solve2() -> anyhow::Result<()> {
-        assert_eq!(super::solve2(&parse2(INPUT)?)?, 2713310158);
+        assert_eq!(super::solve2(&parse2(INPUT)?)?, 2_713_310_158);
         Ok(())
     }
 }

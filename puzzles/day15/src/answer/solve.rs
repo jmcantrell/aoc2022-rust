@@ -23,14 +23,14 @@ mod consts {
 
 use consts::*;
 
-pub fn solve1(parsed: &Parsed1) -> anyhow::Result<Solution1> {
-    let mut rect = parsed.extents();
+pub fn solve1(grid: &Parsed1) -> anyhow::Result<Solution1> {
+    let mut rect = grid.extents();
 
     rect.top_left.y = ROW;
     rect.bottom_right.y = ROW;
 
-    let beacons: HashSet<_> = parsed.beacons().collect();
-    let circles: Vec<_> = parsed.taxicab_circles().collect();
+    let beacons: HashSet<_> = grid.beacons().collect();
+    let circles: Vec<_> = grid.taxicab_circles().collect();
 
     let no_beacons = rect.points().filter_map(move |point| {
         if !beacons.contains(&point) && circles.iter().any(|c| c.contains(&point)) {
@@ -43,7 +43,7 @@ pub fn solve1(parsed: &Parsed1) -> anyhow::Result<Solution1> {
     Ok(no_beacons.count())
 }
 
-pub fn solve2(parsed: &Parsed2) -> anyhow::Result<Solution2> {
+pub fn solve2(grid: &Parsed2) -> anyhow::Result<Solution2> {
     let rect = Rectangle {
         top_left: Point { x: 0, y: 0 },
         bottom_right: Point {
@@ -52,7 +52,7 @@ pub fn solve2(parsed: &Parsed2) -> anyhow::Result<Solution2> {
         },
     };
 
-    let circles: Vec<TaxicabCircle> = parsed.taxicab_circles().collect();
+    let circles: Vec<TaxicabCircle> = grid.taxicab_circles().collect();
 
     let mut possible_beacons: Vec<_> = (rect.top()..=rect.bottom())
         .filter_map(|y| {
@@ -103,7 +103,7 @@ pub mod tests {
 
     #[test]
     fn solve2() -> anyhow::Result<()> {
-        assert_eq!(super::solve2(&parse2(INPUT)?)?, 56000011);
+        assert_eq!(super::solve2(&parse2(INPUT)?)?, 56_000_011);
         Ok(())
     }
 }

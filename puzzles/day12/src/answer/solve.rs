@@ -6,12 +6,12 @@ pub type Solution = usize;
 pub type Solution1 = Solution;
 pub type Solution2 = Solution;
 
-pub fn solve1(parsed: &Parsed1) -> anyhow::Result<Solution1> {
-    Ok(parsed.find_shortest_path().context("no path found")?.len())
+pub fn solve1(map: &Parsed1) -> anyhow::Result<Solution1> {
+    Ok(map.find_shortest_path().context("no path found")?.len())
 }
 
-pub fn solve2(parsed: &Parsed2) -> anyhow::Result<Solution2> {
-    Ok(parsed
+pub fn solve2(map: &Parsed2) -> anyhow::Result<Solution2> {
+    Ok(map
         .find_alternate_paths()
         .map(|path| path.len())
         .min()

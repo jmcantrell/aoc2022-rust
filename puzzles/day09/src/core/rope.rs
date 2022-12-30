@@ -1,8 +1,6 @@
 use std::collections::HashSet;
 
-use crate::core::{Direction, Point, Vector};
-
-pub const ORIGIN: Point = Point { x: 0, y: 0 };
+use crate::core::{Direction, Point, Vector, ORIGIN};
 
 #[derive(Debug)]
 pub struct Rope {
@@ -93,21 +91,21 @@ mod tests {
 
     #[test]
     fn vertical_tail_move() {
-        assert_tail!(Point { x: 0, y: 1 }, "UU");
-        assert_tail!(Point { x: 0, y: -1 }, "DD");
+        assert_tail!(Point::new(0, 1), "UU");
+        assert_tail!(Point::new(0, -1), "DD");
     }
 
     #[test]
     fn horizontal_tail_move() {
-        assert_tail!(Point { x: -1, y: 0 }, "LL");
-        assert_tail!(Point { x: 1, y: 0 }, "RR");
+        assert_tail!(Point::new(-1, 0), "LL");
+        assert_tail!(Point::new(1, 0), "RR");
     }
 
     #[test]
     fn diagonal_tail_move() {
-        assert_tail!(Point { x: -1, y: -1 }, "DLD", "LDL", "LDD", "DLL");
-        assert_tail!(Point { x: 1, y: -1 }, "DRD", "RDR", "RDD", "DRR");
-        assert_tail!(Point { x: -1, y: 1 }, "ULU", "LUL", "LUU", "ULL");
-        assert_tail!(Point { x: 1, y: 1 }, "URU", "RUR", "RUU", "URR")
+        assert_tail!(Point::new(-1, -1), "DLD", "LDL", "LDD", "DLL");
+        assert_tail!(Point::new(1, -1), "DRD", "RDR", "RDD", "DRR");
+        assert_tail!(Point::new(-1, 1), "ULU", "LUL", "LUU", "ULL");
+        assert_tail!(Point::new(1, 1), "URU", "RUR", "RUU", "URR")
     }
 }

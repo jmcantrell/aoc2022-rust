@@ -8,7 +8,7 @@ pub type Parsed = Elves;
 pub type Parsed1 = Parsed;
 pub type Parsed2 = Parsed;
 
-fn parse(s: &str) -> anyhow::Result<Parsed> {
+fn parse(input: &str) -> anyhow::Result<Parsed> {
     fn parse_int(s: &str) -> anyhow::Result<usize> {
         s.parse()
             .with_context(|| format!("invalid integer: {:?}", s))
@@ -32,7 +32,7 @@ fn parse(s: &str) -> anyhow::Result<Parsed> {
             .collect()
     }
 
-    parse_elves(s).context("unable to parse elves")
+    parse_elves(input).context("unable to parse elves")
 }
 
 pub fn parse1(input: Input) -> anyhow::Result<Parsed1> {

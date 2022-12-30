@@ -1,5 +1,5 @@
-use crate::core::{play, Round, Score};
 use crate::answer::{Parsed1, Parsed2};
+use crate::core::{play, Round, Score};
 
 pub type Solution = usize;
 pub type Solution1 = Solution;
@@ -9,14 +9,14 @@ fn get_my_total_score(scores: impl Iterator<Item = Round>) -> Score {
     scores.map(|(_, (_, my_score))| my_score).sum()
 }
 
-pub fn solve1(parsed: &Parsed1) -> anyhow::Result<Solution1> {
-    let scores = parsed.iter().map(|(shape1, shape2)| play(shape1, shape2));
+pub fn solve1(pairs: &Parsed1) -> anyhow::Result<Solution1> {
+    let scores = pairs.iter().map(|(shape1, shape2)| play(shape1, shape2));
 
     Ok(get_my_total_score(scores))
 }
 
-pub fn solve2(parsed: &Parsed2) -> anyhow::Result<Solution2> {
-    let scores = parsed
+pub fn solve2(pairs: &Parsed2) -> anyhow::Result<Solution2> {
+    let scores = pairs
         .iter()
         .map(|(shape, my_outcome)| play(shape, &my_outcome.ensure(shape)));
 

@@ -2,10 +2,18 @@ use std::convert::TryFrom;
 
 use anyhow::Context;
 
+pub const ORIGIN: Point = Point { x: 0, y: 0 };
+
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Point {
     pub x: isize,
     pub y: isize,
+}
+
+impl Point {
+    pub fn new(x: isize, y: isize) -> Self {
+        Self { x, y }
+    }
 }
 
 impl TryFrom<&str> for Point {

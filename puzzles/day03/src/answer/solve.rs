@@ -1,21 +1,21 @@
 use anyhow::Context;
 
-use crate::core::{find_common_by_chunk, find_common_by_pocket};
 use crate::answer::{Parsed1, Parsed2};
+use crate::core::{find_common_by_chunk, find_common_by_pocket};
 
 pub type Solution = usize;
 pub type Solution1 = Solution;
 pub type Solution2 = Solution;
 
-pub fn solve1(parsed: &Parsed1) -> anyhow::Result<Solution1> {
-    Ok(find_common_by_pocket(parsed)
+pub fn solve1(rucksacks: &Parsed1) -> anyhow::Result<Solution1> {
+    Ok(find_common_by_pocket(rucksacks)
         .context("no common priority")?
         .into_iter()
         .sum())
 }
 
-pub fn solve2(parsed: &Parsed2) -> anyhow::Result<Solution2> {
-    Ok(find_common_by_chunk(parsed, 3)
+pub fn solve2(rucksacks: &Parsed2) -> anyhow::Result<Solution2> {
+    Ok(find_common_by_chunk(rucksacks, 3)
         .context("no common priority")?
         .into_iter()
         .sum())

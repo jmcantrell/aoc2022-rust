@@ -44,15 +44,15 @@ mod tests {
             .points()
             .collect::<Vec<_>>(),
             vec![
-                Point { x: -1, y: -1 },
-                Point { x: 0, y: -1 },
-                Point { x: 1, y: -1 },
-                Point { x: -1, y: 0 },
-                Point { x: 0, y: 0 },
-                Point { x: 1, y: 0 },
-                Point { x: -1, y: 1 },
-                Point { x: 0, y: 1 },
-                Point { x: 1, y: 1 },
+                Point::new(-1, -1),
+                Point::new(0, -1),
+                Point::new(1, -1),
+                Point::new(-1, 0),
+                Point::new(0, 0),
+                Point::new(1, 0),
+                Point::new(-1, 1),
+                Point::new(0, 1),
+                Point::new(1, 1),
             ]
         )
     }

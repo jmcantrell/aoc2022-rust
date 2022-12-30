@@ -49,49 +49,26 @@ impl TaxicabCircle {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    const CENTER: Point = Point { x: 0, y: 0 };
+    use crate::core::ORIGIN;
 
     #[test]
     fn manhattan_distance_perpendicular() {
         let max_dist: isize = 10;
 
         for i in -max_dist..=max_dist {
-            assert_eq!(
-                super::manhattan_distance(&CENTER, &Point { x: i, y: 0 }),
-                i.abs()
-            );
-            assert_eq!(
-                super::manhattan_distance(&CENTER, &Point { x: 0, y: i }),
-                i.abs()
-            );
+            assert_eq!(manhattan_distance(&ORIGIN, &Point::new(i, 0)), i.abs());
+            assert_eq!(manhattan_distance(&ORIGIN, &Point::new(0, i)), i.abs());
         }
     }
 
     #[test]
     fn manhattan_distance_diagonal() {
         let dist: isize = 10;
-
         let half = dist / 2;
 
-        assert_eq!(
-            super::manhattan_distance(&CENTER, &Point { x: half, y: half }),
-            dist.abs()
-        );
-
-        assert_eq!(
-            super::manhattan_distance(&CENTER, &Point { x: -half, y: half }),
-            dist.abs()
-        );
-
-        assert_eq!(
-            super::manhattan_distance(&CENTER, &Point { x: half, y: -half }),
-            dist.abs()
-        );
-
-        assert_eq!(
-            super::manhattan_distance(&CENTER, &Point { x: -half, y: -half }),
-            dist.abs()
-        );
+        assert_eq!(manhattan_distance(&ORIGIN, &Point::new(half, half)), dist);
+        assert_eq!(manhattan_distance(&ORIGIN, &Point::new(-half, half)), dist);
+        assert_eq!(manhattan_distance(&ORIGIN, &Point::new(half, -half)), dist);
+        assert_eq!(manhattan_distance(&ORIGIN, &Point::new(-half, -half)), dist);
     }
 }

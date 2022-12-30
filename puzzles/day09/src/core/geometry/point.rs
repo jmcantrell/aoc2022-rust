@@ -2,6 +2,8 @@ use std::ops::{Add, AddAssign, Sub};
 
 use super::Direction;
 
+pub const ORIGIN: Point = Point { x: 0, y: 0 };
+
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Point {
     pub x: isize,
@@ -9,6 +11,10 @@ pub struct Point {
 }
 
 impl Point {
+    pub fn new(x: isize, y: isize) -> Self {
+        Self { x, y }
+    }
+
     pub fn abs(self) -> Point {
         Self {
             x: self.x.abs(),

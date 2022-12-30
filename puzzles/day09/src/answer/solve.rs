@@ -16,12 +16,12 @@ fn trail_size(moves: &Parsed, num_knots: usize) -> usize {
     rope.trail.len()
 }
 
-pub fn solve1(parsed: &Parsed1) -> anyhow::Result<Solution1> {
-    Ok(trail_size(parsed, 2))
+pub fn solve1(vectors: &Parsed1) -> anyhow::Result<Solution1> {
+    Ok(trail_size(vectors, 2))
 }
 
-pub fn solve2(parsed: &Parsed2) -> anyhow::Result<Solution2> {
-    Ok(trail_size(parsed, 10))
+pub fn solve2(vectors: &Parsed2) -> anyhow::Result<Solution2> {
+    Ok(trail_size(vectors, 10))
 }
 
 #[cfg(test)]
