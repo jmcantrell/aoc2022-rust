@@ -5,11 +5,13 @@ use anyhow::Context;
 use lazy_static::lazy_static;
 use regex::Regex;
 
-use crate::core::{Resource, ResourceContainer, ResourceMap, ResourceTally};
+use crate::core::{Resource, ResourceContainer, ResourceCount, ResourceMap, ResourceTally};
 
-const INITIAL_POPULATION: ResourceContainer<u16> = [1, 0, 0, 0];
+const INITIAL_POPULATION: ResourceContainer<ResourceCount> = [1, 0, 0, 0];
 
-fn div_ceil(dividend: u16, divisor: u16) -> u16 {
+type Minutes = u16;
+
+fn div_ceil(dividend: ResourceCount, divisor: ResourceCount) -> ResourceCount {
     let quotient = dividend / divisor;
     let remainder = dividend % divisor;
     quotient + if remainder == 0 { 0 } else { 1 }
@@ -19,8 +21,8 @@ fn buildable(
     cost: &ResourceTally,
     population: &ResourceTally,
     resources: &ResourceTally,
-    minutes_remaining: u16,
-) -> Option<u16> {
+    minutes_remaining: Minutes,
+) -> Option<Minutes> {
     if minutes_remaining == 0 {
         return None;
     }
@@ -52,95 +54,23 @@ fn buildable(
     Some(max_minutes_required)
 }
 
+pub type Identifier = u8;
 pub type RobotCost = ResourceMap<ResourceTally>;
 
 #[derive(Debug, Clone)]
 pub struct Blueprint {
-    pub id: u16,
+    pub id: Identifier,
     pub robots: RobotCost,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-struct State {
-    pub minutes_remaining: u16,
-    pub population: ResourceTally,
-    pub resources: ResourceTally,
-}
-
-impl State {
-    fn new(minutes_remaining: u16) -> Self {
-        Self {
-            minutes_remaining,
-            population: INITIAL_POPULATION.into(),
-            resources: Default::default(),
-        }
-    }
-
-    fn accumulate(mut self, minutes: u16) -> Self {
-        self.resources += self.population * minutes;
-        self
-    }
-
-    fn finish(self) -> Self {
-        self.accumulate(self.minutes_remaining)
-    }
-
-    fn branches<'a>(&'a self, blueprint: &'a Blueprint) -> impl Iterator<Item = Branch> + '_ {
-        blueprint.robots.iter().filter_map(|(&robot, &cost)| {
-            buildable(
-                &cost,
-                &self.population,
-                &self.resources,
-                self.minutes_remaining,
-            )
-            .map(|minutes_required| Branch {
-                robot,
-                cost,
-                minutes_required,
-            })
-        })
-    }
-}
-
-#[derive(Debug, Clone, Copy)]
-struct Branch {
-    robot: Resource,
-    cost: ResourceTally,
-    minutes_required: u16,
-}
-
-impl Add<Branch> for State {
-    type Output = Self;
-
-    fn add(self, branch: Branch) -> Self {
-        let mut result = self.accumulate(branch.minutes_required);
-        result.resources -= branch.cost;
-        result.population[&branch.robot] += 1;
-        result.minutes_remaining -= branch.minutes_required;
-        result
-    }
-}
-
-#[derive(Debug, Clone, Default)]
-struct Timeline(Vec<(Branch, State)>);
-
-impl Add<(Branch, State)> for Timeline {
-    type Output = Self;
-
-    fn add(mut self, item: (Branch, State)) -> Self {
-        self.0.push(item);
-        self
-    }
-}
-
 impl Blueprint {
-    pub fn max_geodes_collectable(&self, minutes: u16) -> u16 {
+    pub fn max_geodes_collectable(&self, minutes: Minutes) -> ResourceCount {
         fn recurse(
             blueprint: &Blueprint,
-            cache: &mut HashMap<State, u16>,
-            best: &mut u16,
+            cache: &mut HashMap<State, ResourceCount>,
+            best: &mut ResourceCount,
             state: State,
-        ) -> u16 {
+        ) -> ResourceCount {
             let current = *state.resources.geode();
 
             if state.minutes_remaining == 0 {
@@ -152,7 +82,7 @@ impl Blueprint {
             }
 
             let n = state.minutes_remaining;
-            let will_collect = state.population.geode() * n;
+            let will_collect = *state.population.geode() * n;
             let possibly_collect = n * (n - 1) / 2;
 
             if current + will_collect + possibly_collect <= *best {
@@ -183,7 +113,7 @@ impl TryFrom<&str> for Blueprint {
     type Error = anyhow::Error;
 
     fn try_from(s: &str) -> Result<Self, Self::Error> {
-        fn parse_resource_cost(s: &str) -> anyhow::Result<(Resource, u16)> {
+        fn parse_resource_cost(s: &str) -> anyhow::Result<(Resource, ResourceCount)> {
             lazy_static! {
                 static ref RE: Regex = r"^(\d+) (\S+)$".parse().unwrap();
             }
@@ -192,7 +122,7 @@ impl TryFrom<&str> for Blueprint {
                 .captures(s)
                 .with_context(|| format!("invalid resource cost: {:?}", s))?;
 
-            let cost: u16 = captures[1]
+            let cost: ResourceCount = captures[1]
                 .parse()
                 .with_context(|| format!("invalid cost: {:?}", &captures[0]))?;
 
@@ -232,7 +162,7 @@ impl TryFrom<&str> for Blueprint {
             .captures(s)
             .with_context(|| format!("invalid blueprint: {:?}", s))?;
 
-        let id: u16 = captures[1].parse()?;
+        let id: Identifier = captures[1].parse()?;
 
         let robots: RobotCost = captures[2]
             .trim_end_matches('.')
@@ -245,6 +175,79 @@ impl TryFrom<&str> for Blueprint {
             .into();
 
         Ok(Blueprint { id, robots })
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+struct State {
+    pub minutes_remaining: Minutes,
+    pub population: ResourceTally,
+    pub resources: ResourceTally,
+}
+
+impl State {
+    fn new(minutes_remaining: Minutes) -> Self {
+        Self {
+            minutes_remaining,
+            population: INITIAL_POPULATION.into(),
+            resources: Default::default(),
+        }
+    }
+
+    fn accumulate(mut self, minutes: Minutes) -> Self {
+        self.resources += self.population * minutes;
+        self
+    }
+
+    fn finish(self) -> Self {
+        self.accumulate(self.minutes_remaining)
+    }
+
+    fn branches<'a>(&'a self, blueprint: &'a Blueprint) -> impl Iterator<Item = Branch> + '_ {
+        blueprint.robots.iter().filter_map(|(&robot, &cost)| {
+            buildable(
+                &cost,
+                &self.population,
+                &self.resources,
+                self.minutes_remaining,
+            )
+            .map(|minutes_required| Branch {
+                robot,
+                cost,
+                minutes_required,
+            })
+        })
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+struct Branch {
+    robot: Resource,
+    cost: ResourceTally,
+    minutes_required: Minutes,
+}
+
+impl Add<Branch> for State {
+    type Output = Self;
+
+    fn add(self, branch: Branch) -> Self {
+        let mut result = self.accumulate(branch.minutes_required);
+        result.resources -= branch.cost;
+        result.population[&branch.robot] += 1;
+        result.minutes_remaining -= branch.minutes_required;
+        result
+    }
+}
+
+#[derive(Debug, Clone, Default)]
+struct Timeline(Vec<(Branch, State)>);
+
+impl Add<(Branch, State)> for Timeline {
+    type Output = Self;
+
+    fn add(mut self, item: (Branch, State)) -> Self {
+        self.0.push(item);
+        self
     }
 }
 

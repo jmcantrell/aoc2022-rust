@@ -15,6 +15,7 @@ pub const RESOURCES: ResourceContainer<Resource> = [
     Resource::Geode,
 ];
 
+#[repr(u8)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Resource {
     Ore,
@@ -179,10 +180,12 @@ impl<T> IndexMut<&Resource> for ResourceMap<T> {
     }
 }
 
-pub type ResourceTally = ResourceMap<u16>;
+pub type ResourceCount = u16;
+
+pub type ResourceTally = ResourceMap<ResourceCount>;
 
 impl ResourceTally {
-    pub fn iter_non_zero(&self) -> impl Iterator<Item = (&Resource, &u16)> {
+    pub fn iter_non_zero(&self) -> impl Iterator<Item = (&Resource, &ResourceCount)> {
         self.iter().filter(|(_, &n)| n > 0)
     }
 }
@@ -246,10 +249,10 @@ impl Mul<Self> for ResourceTally {
     }
 }
 
-impl Mul<u16> for ResourceTally {
+impl Mul<ResourceCount> for ResourceTally {
     type Output = Self;
 
-    fn mul(self, other: u16) -> Self {
+    fn mul(self, other: ResourceCount) -> Self {
         self.0.map(|value| value * other).into()
     }
 }
