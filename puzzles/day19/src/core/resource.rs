@@ -18,21 +18,10 @@ pub const RESOURCES: ResourceContainer<Resource> = [
 #[repr(u8)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Resource {
-    Ore,
-    Clay,
-    Obsidian,
-    Geode,
-}
-
-impl Resource {
-    fn index(&self) -> usize {
-        match self {
-            Self::Ore => 0,
-            Self::Clay => 1,
-            Self::Obsidian => 2,
-            Self::Geode => 3,
-        }
-    }
+    Ore = 0,
+    Clay = 1,
+    Obsidian = 2,
+    Geode = 3,
 }
 
 impl fmt::Display for Resource {
@@ -170,13 +159,13 @@ impl<T> Index<&Resource> for ResourceMap<T> {
     type Output = T;
 
     fn index(&self, resource: &Resource) -> &Self::Output {
-        &self.0[resource.index()]
+        &self.0[*resource as usize]
     }
 }
 
 impl<T> IndexMut<&Resource> for ResourceMap<T> {
     fn index_mut(&mut self, resource: &Resource) -> &mut Self::Output {
-        &mut self.0[resource.index()]
+        &mut self.0[*resource as usize]
     }
 }
 
