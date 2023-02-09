@@ -2,10 +2,9 @@ use std::collections::HashMap;
 
 use lazy_static::lazy_static;
 
-use crate::core::cube_net::CubeNet;
-use crate::core::geometry::{AxesBounds, Direction, Location, DIRECTIONS};
+use crate::geometry::{AxesBounds, Direction, Location, DIRECTIONS};
 
-use super::{Map, Tile, Walk, Walker};
+use super::{CubeNet, Map, Tile, Walk, Walker};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum IndexTransform {

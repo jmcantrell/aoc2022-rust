@@ -3,6 +3,15 @@
 version = 3
 
 [[package]]
+name = "__NAME__"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "aoc",
+ "criterion",
+]
+
+[[package]]
 name = "aho-corasick"
 version = "0.7.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"

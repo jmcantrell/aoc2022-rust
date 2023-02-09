@@ -3,7 +3,7 @@ use std::ops::Range;
 
 use anyhow::Context;
 
-use crate::core::geometry::{AxesBounds, Direction, Grid, Location};
+use crate::geometry::{AxesBounds, Direction, Grid, Location};
 
 use super::{Tile, Walker};
 

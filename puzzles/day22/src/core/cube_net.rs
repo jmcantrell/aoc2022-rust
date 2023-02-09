@@ -5,10 +5,10 @@ use std::ops::Range;
 use anyhow::{anyhow, ensure, Context};
 use lazy_static::lazy_static;
 
-use crate::core::geometry::{
+use crate::geometry::{
     AxesBounds, Direction, Grid, Location, Rectangle, RelativeDirection, Size, DIRECTIONS,
 };
-use crate::core::math::gcd;
+use crate::math::gcd;
 
 const FACES_LEN: usize = 6;
 const NET_DIMS: Size = Size::square(5);
@@ -265,7 +265,7 @@ impl<T> TryFrom<&Net<T>> for CubeNet {
 mod tests {
     use itertools::Itertools;
 
-    use crate::core::geometry::index_for_location;
+    use crate::geometry::index_for_location;
 
     use super::*;
 

@@ -1,4 +1,4 @@
-use crate::core::geometry::Rotation;
+use crate::geometry::Rotation;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Movement {

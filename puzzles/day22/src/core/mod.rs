@@ -1,6 +1,5 @@
 pub mod cube_net;
-pub mod geometry;
-pub mod math;
+pub use cube_net::*;
 
 pub mod board;
 pub use board::*;

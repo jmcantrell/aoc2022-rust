@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::core::geometry::{Direction, Location};
+use crate::geometry::{Direction, Location};
 
 use super::{Map, Tile, Walk, Walker};
 
