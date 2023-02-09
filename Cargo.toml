@@ -1,2 +1,2 @@
 [workspace]
-members = ["aoc", "puzzles/*"]
+members = ["lib/*", "puzzles/*"]
