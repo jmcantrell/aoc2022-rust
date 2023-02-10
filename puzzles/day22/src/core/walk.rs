@@ -1,6 +1,6 @@
-use crate::geometry::{Direction, Location};
+use super::{Direction, Location, Map, Movement, Tile};
 
-use super::{Map, Movement, Tile};
+use geometry::CardinalDirection::*;
 
 #[derive(Debug, Clone)]
 pub struct Walker {
@@ -23,13 +23,13 @@ impl Walker {
     }
 
     pub fn password(&self) -> usize {
-        1000 * (self.location.row + 1)
-            + 4 * (self.location.column + 1)
+        1000 * (self.location.y + 1)
+            + 4 * (self.location.x + 1)
             + match self.direction {
-                Direction::East => 0,
-                Direction::South => 1,
-                Direction::West => 2,
-                Direction::North => 3,
+                East => 0,
+                South => 1,
+                West => 2,
+                North => 3,
             }
     }
 }

@@ -1,7 +1,5 @@
 use anyhow::Context;
 
-use crate::core::{ScenicScores, Visibility};
-
 use super::{Parsed1, Parsed2};
 
 pub type Solution = usize;
@@ -9,15 +7,15 @@ pub type Solution1 = Solution;
 pub type Solution2 = Solution;
 
 pub fn solve1(tree_patch: &Parsed1) -> anyhow::Result<Solution1> {
-    Ok(tree_patch.visibility().visible().count())
+    Ok(tree_patch.visibility().count())
 }
 
 pub fn solve2(tree_patch: &Parsed2) -> anyhow::Result<Solution2> {
-    Ok(*tree_patch
+    tree_patch
         .scenic_scores()
-        .values()
+        .map(|(_, score)| score)
         .max()
-        .context("grid is empty")?)
+        .context("grid is empty")
 }
 
 #[cfg(test)]

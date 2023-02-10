@@ -49,15 +49,20 @@ impl TaxicabCircle {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::core::ORIGIN;
+
+    macro_rules! assert_distance {
+        ($point:expr, $dist:expr) => {
+            assert_eq!(manhattan_distance(&Point::default(), &$point.into()), $dist);
+        };
+    }
 
     #[test]
     fn manhattan_distance_perpendicular() {
         let max_dist: isize = 10;
 
         for i in -max_dist..=max_dist {
-            assert_eq!(manhattan_distance(&ORIGIN, &Point::new(i, 0)), i.abs());
-            assert_eq!(manhattan_distance(&ORIGIN, &Point::new(0, i)), i.abs());
+            assert_distance!((i, 0), i.abs());
+            assert_distance!((0, i), i.abs());
         }
     }
 
@@ -66,9 +71,9 @@ mod tests {
         let dist: isize = 10;
         let half = dist / 2;
 
-        assert_eq!(manhattan_distance(&ORIGIN, &Point::new(half, half)), dist);
-        assert_eq!(manhattan_distance(&ORIGIN, &Point::new(-half, half)), dist);
-        assert_eq!(manhattan_distance(&ORIGIN, &Point::new(half, -half)), dist);
-        assert_eq!(manhattan_distance(&ORIGIN, &Point::new(-half, -half)), dist);
+        assert_distance!((half, half), dist);
+        assert_distance!((-half, half), dist);
+        assert_distance!((half, -half), dist);
+        assert_distance!((-half, -half), dist);
     }
 }

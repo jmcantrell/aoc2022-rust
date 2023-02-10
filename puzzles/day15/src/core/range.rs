@@ -12,7 +12,7 @@ pub fn merge_range(a: &RangeInclusive<isize>, b: &RangeInclusive<isize>) -> Rang
 }
 
 pub fn coalesce_ranges(mut old: Vec<RangeInclusive<isize>>) -> Vec<RangeInclusive<isize>> {
-    if old.len() == 0 {
+    if old.is_empty() {
         return old;
     }
 

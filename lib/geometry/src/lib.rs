@@ -18,3 +18,9 @@ pub use size::*;
 
 pub mod rotation;
 pub use rotation::*;
+
+pub mod vector;
+pub use vector::*;
+
+pub mod iter;
+pub use iter::*;

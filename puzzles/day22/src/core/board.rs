@@ -1,8 +1,6 @@
 use std::collections::HashMap;
 
-use crate::geometry::{Direction, Location};
-
-use super::{Map, Tile, Walk, Walker};
+use super::{Map, Tile, Walk, Walker, Location, Direction};
 
 type Portals = HashMap<Location, Location>;
 
@@ -29,8 +27,12 @@ impl<'a> Walk<'a> for Board {
     }
 
     fn neighbor(&self, location: Location, direction: Direction) -> (Location, Direction, Tile) {
-        match self.map.grid.neighbor_cell_some(&location, &direction) {
-            Some((adjacent, tile)) => (adjacent, direction, *tile),
+        match self.map.grid.neighbor_some(&location, &direction) {
+            Some(adjacent) => (
+                adjacent,
+                direction,
+                *self.map.grid.get_some(&adjacent).unwrap(),
+            ),
             None => {
                 let adjacent = self.portal(&location, &direction);
                 (

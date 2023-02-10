@@ -1,4 +1,6 @@
-use crate::geometry::Rotation;
+use anyhow::anyhow;
+
+use geometry::Rotation;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Movement {
@@ -13,7 +15,11 @@ impl TryFrom<&str> for Movement {
         if let Ok(value) = s.parse::<usize>() {
             Ok(Self::Forward(value))
         } else {
-            Ok(Self::Rotate(Rotation::try_from(s)?))
+            match s {
+                "L" => Ok(Self::Rotate(Rotation::Left)),
+                "R" => Ok(Self::Rotate(Rotation::Right)),
+                _ => Err(anyhow!("invalid movement: {:?}", s)),
+            }
         }
     }
 }

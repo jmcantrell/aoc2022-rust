@@ -1,5 +1,5 @@
 [package]
-name = "day09"
+name = "geometry"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,12 +7,4 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0"
-aoc = { path = "../../lib/aoc" }
-geometry = { path = "../../lib/geometry" }
-
-[dev-dependencies]
-criterion = "0.4"
-
-[[bench]]
-name = "aoc"
-harness = false
+num = "0.4.0"

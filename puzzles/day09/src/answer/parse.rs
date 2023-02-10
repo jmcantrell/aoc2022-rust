@@ -2,22 +2,20 @@ use anyhow::Context;
 
 use aoc::Input;
 
-use crate::core::Vector;
+use crate::core::Movement;
 
-pub type Parsed = Vec<Vector>;
+pub type Parsed = Vec<Movement>;
 pub type Parsed1 = Parsed;
 pub type Parsed2 = Parsed;
 
 fn parse(input: Input) -> anyhow::Result<Parsed> {
-    fn parse_vector(s: &str) -> anyhow::Result<Vector> {
-        s.try_into()
-            .with_context(|| format!("invalid vector: {:?}", s))
-    }
-
     input
         .lines()
         .enumerate()
-        .map(|(i, s)| parse_vector(s).with_context(|| format!("line number {}", i + 1)))
+        .map(|(i, s)| {
+            s.try_into()
+                .with_context(|| format!("line number {}", i + 1))
+        })
         .collect()
 }
 

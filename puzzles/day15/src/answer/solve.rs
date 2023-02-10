@@ -2,7 +2,9 @@ use std::collections::HashSet;
 
 use anyhow::ensure;
 
-use crate::core::{Point, Rectangle, TaxicabCircle, coalesce_ranges};
+use geometry::AxesBounds;
+
+use crate::core::{coalesce_ranges, Extents, Point, TaxicabCircle};
 
 use super::{Parsed1, Parsed2};
 
@@ -32,25 +34,15 @@ pub fn solve1(grid: &Parsed1) -> anyhow::Result<Solution1> {
     let beacons: HashSet<_> = grid.beacons().collect();
     let circles: Vec<_> = grid.taxicab_circles().collect();
 
-    let no_beacons = rect.points().filter_map(move |point| {
-        if !beacons.contains(&point) && circles.iter().any(|c| c.contains(&point)) {
-            Some(point)
-        } else {
-            None
-        }
+    let no_beacons = rect.row_major_locations().filter(move |point| {
+        !beacons.contains(&point) && circles.iter().any(|c| c.contains(point))
     });
 
     Ok(no_beacons.count())
 }
 
 pub fn solve2(grid: &Parsed2) -> anyhow::Result<Solution2> {
-    let rect = Rectangle {
-        top_left: Point { x: 0, y: 0 },
-        bottom_right: Point {
-            x: MAX_COMPONENT,
-            y: MAX_COMPONENT,
-        },
-    };
+    let rect = Extents::new(Point::default(), Point::new(MAX_COMPONENT, MAX_COMPONENT));
 
     let circles: Vec<TaxicabCircle> = grid.taxicab_circles().collect();
 
@@ -65,7 +57,7 @@ pub fn solve2(grid: &Parsed2) -> anyhow::Result<Solution2> {
         })
         .collect();
 
-    ensure!(possible_beacons.len() > 0, "no candidate rows found");
+    ensure!(!possible_beacons.is_empty(), "no candidate rows found");
 
     ensure!(
         possible_beacons.len() == 1,
@@ -74,7 +66,7 @@ pub fn solve2(grid: &Parsed2) -> anyhow::Result<Solution2> {
 
     let (y, mut x_ranges) = possible_beacons.pop().unwrap();
 
-    ensure!(x_ranges.len() > 0, "no candidates found on row {}", y);
+    ensure!(!x_ranges.is_empty(), "no candidates found on row {}", y);
 
     x_ranges.reverse();
 
@@ -84,7 +76,7 @@ pub fn solve2(grid: &Parsed2) -> anyhow::Result<Solution2> {
 
     let distress_beacon = Point { x, y };
 
-    Ok(distress_beacon.x * (4000000 as isize) + distress_beacon.y)
+    Ok(distress_beacon.x * 4_000_000 + distress_beacon.y)
 }
 
 #[cfg(test)]

@@ -2,7 +2,7 @@ use std::fmt;
 
 use anyhow::anyhow;
 
-use crate::geometry::Direction;
+use super::Direction;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Tile {

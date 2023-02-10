@@ -6,10 +6,7 @@ pub type Solution = usize;
 pub type Solution1 = Solution;
 pub type Solution2 = Solution;
 
-const START: Location = Location {
-    row: 0,
-    column: 500,
-};
+const START: Location = Location::new(500, 0);
 
 pub fn solve1(map: &Parsed1) -> anyhow::Result<Solution1> {
     Ok(map.clone().fill_with_sand(&START).count())

@@ -3,9 +3,9 @@ use std::ops::Range;
 
 use anyhow::Context;
 
-use crate::geometry::{AxesBounds, Direction, Grid, Location};
+use geometry::{AxesBounds, Grid};
 
-use super::{Tile, Walker};
+use super::{Direction, Location, Tile, Walker};
 
 #[derive(Debug, Clone)]
 pub struct Map {
@@ -18,7 +18,7 @@ impl Map {
             .row_groups()
             .next()
             .expect("no rows")
-            .find(|location| self.grid[&location].is_some())
+            .find(|location| self.grid[location].is_some())
             .expect("no non-empty tiles in the first row")
     }
 
@@ -27,7 +27,7 @@ impl Map {
     }
 }
 
-impl AxesBounds for Map {
+impl AxesBounds<usize> for Map {
     fn vertical_bounds(&self) -> Range<usize> {
         self.grid.vertical_bounds()
     }

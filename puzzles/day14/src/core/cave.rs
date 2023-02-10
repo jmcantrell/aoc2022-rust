@@ -1,9 +1,9 @@
-use std::convert::TryFrom;
+use std::collections::HashMap;
 use std::fmt;
 
 use anyhow::{ensure, Context};
 
-use crate::core::{GraphGrid, Location, DIRECTIONS};
+use super::{Location, FALLS};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Unit {
@@ -11,28 +11,62 @@ pub enum Unit {
     Sand,
 }
 
-const AIR: &'static str = ".";
-const ROCK: &'static str = "#";
-const SAND: &'static str = "o";
+const AIR: &str = ".";
+const ROCK: &str = "#";
+const SAND: &str = "o";
 
 #[derive(Debug, Clone)]
 pub struct CaveMap {
-    grid: GraphGrid<Unit>,
+    grid: HashMap<Location, Unit>,
     pub lowest_rock: isize,
     pub floor: Option<isize>,
 }
 
 impl CaveMap {
-    fn can_drop_to(&self, location: &Location) -> Option<bool> {
-        if self.grid.contains(location) {
+    fn extents(&self) -> (Location, Location) {
+        if self.grid.is_empty() {
+            return (Location::default(), Location::default());
+        }
+
+        let mut points = self.grid.keys();
+
+        let first = points.next().unwrap();
+
+        let mut top_left = *first;
+        let mut bottom_right = *first;
+
+        for &point in points {
+            if point.y < top_left.y {
+                top_left.y = point.y;
+            }
+            if point.x < top_left.x {
+                top_left.x = point.x;
+            }
+            if point.y > bottom_right.y {
+                bottom_right.y = point.y;
+            }
+            if point.x > bottom_right.x {
+                bottom_right.x = point.x;
+            }
+        }
+
+        (top_left, bottom_right)
+    }
+
+    pub fn bottom(&self) -> isize {
+        self.extents().1.y
+    }
+
+    fn can_drop_to(&self, point: &Location) -> Option<bool> {
+        if self.grid.contains_key(point) {
             return Some(false);
         }
 
         if let Some(floor) = self.floor {
-            if location.row >= floor {
+            if point.y >= floor {
                 return Some(false);
             }
-        } else if location.row >= self.lowest_rock {
+        } else if point.y >= self.lowest_rock {
             return None;
         }
 
@@ -40,20 +74,20 @@ impl CaveMap {
     }
 
     pub fn drop_sand(&mut self, start: &Location) -> Option<Location> {
-        if self.grid.contains(start) {
+        if self.grid.contains_key(start) {
             return None;
         }
 
-        let mut location = *start;
+        let mut point = *start;
 
-        'drop: loop {
-            for direction in DIRECTIONS.iter() {
-                let below = location + *direction;
+        'fall: loop {
+            for fall in FALLS.iter() {
+                let below = point + *fall;
 
                 match self.can_drop_to(&below) {
                     Some(true) => {
-                        location = below;
-                        continue 'drop;
+                        point = below;
+                        continue 'fall;
                     }
                     Some(false) => {
                         continue;
@@ -64,8 +98,8 @@ impl CaveMap {
                 }
             }
 
-            self.grid.insert(location, Unit::Sand);
-            return Some(location);
+            self.grid.insert(point, Unit::Sand);
+            return Some(point);
         }
     }
 
@@ -79,28 +113,28 @@ impl CaveMap {
 
 impl fmt::Display for CaveMap {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let (top_left, mut bottom_right) = self.grid.extents();
+        let (top_left, mut bottom_right) = self.extents();
 
         if let Some(floor) = self.floor {
-            bottom_right.row = floor;
+            bottom_right.y = floor;
         }
 
-        for row in top_left.row..=bottom_right.row {
-            for column in top_left.column..=bottom_right.column {
+        for y in top_left.y..=bottom_right.y {
+            for x in top_left.x..=bottom_right.x {
                 let mut s = AIR;
 
-                if let Some(unit) = self.grid.get(&Location { row, column }) {
+                if let Some(unit) = self.grid.get(&Location { y, x }) {
                     s = match unit {
                         Unit::Rock => ROCK,
                         Unit::Sand => SAND,
                     };
                 } else if let Some(floor) = self.floor {
-                    if row == floor {
+                    if y == floor {
                         s = ROCK;
                     }
                 };
 
-                write!(f, "{}", s)?;
+                write!(f, "{s}")?;
             }
 
             writeln!(f)?;
@@ -114,16 +148,24 @@ impl TryFrom<&str> for CaveMap {
     type Error = anyhow::Error;
 
     fn try_from(s: &str) -> Result<Self, Self::Error> {
-        fn parse_location(s: &str) -> anyhow::Result<Location> {
-            s.try_into()
-                .with_context(|| format!("invalid location: {:?}", s))
+        fn parse_int(s: &str) -> anyhow::Result<isize> {
+            s.parse().with_context(|| format!("invalid integer: {s:?}"))
+        }
+
+        fn parse_point(s: &str) -> anyhow::Result<Location> {
+            let mut tokens = s.trim().splitn(2, ',');
+
+            let x = parse_int(tokens.next().context("missing column")?)?;
+            let y = parse_int(tokens.next().context("missing row")?)?;
+
+            Ok(Location::new(x, y))
         }
 
         fn parse_path(s: &str) -> anyhow::Result<Vec<Location>> {
             s.split("->")
                 .enumerate()
                 .map(|(i, s)| {
-                    parse_location(s.trim()).with_context(|| format!("location number {}", i + 1))
+                    parse_point(s.trim()).with_context(|| format!("point number {}", i + 1))
                 })
                 .collect::<Result<Vec<_>, _>>()
         }
@@ -131,7 +173,7 @@ impl TryFrom<&str> for CaveMap {
         fn stroke_path(s: &str) -> anyhow::Result<Vec<Location>> {
             let mut path = parse_path(s)?;
 
-            ensure!(path.len() > 0, "empty path");
+            ensure!(!path.is_empty(), "empty path");
 
             let mut prev = path.pop().unwrap();
 
@@ -139,11 +181,11 @@ impl TryFrom<&str> for CaveMap {
 
             while !path.is_empty() {
                 let next = path.pop().unwrap();
-                let unit = (next - prev).unit();
+                let unit = (next - prev).signum();
                 let mut current = prev;
                 while current != next {
                     stroke.push(current);
-                    current = current + unit;
+                    current += unit;
                 }
                 prev = next;
             }
@@ -153,19 +195,23 @@ impl TryFrom<&str> for CaveMap {
             Ok(stroke)
         }
 
-        let mut grid = GraphGrid::new();
+        let mut grid = HashMap::new();
         let mut lowest_rock = 0;
 
         for (i, line) in s.lines().enumerate() {
             let path = stroke_path(line).with_context(|| format!("path number {}", i + 1))?;
-            for location in path.into_iter() {
-                if location.row > lowest_rock {
-                    lowest_rock = location.row;
+            for point in path.into_iter() {
+                if point.y > lowest_rock {
+                    lowest_rock = point.y;
                 }
-                grid.insert(location, Unit::Rock);
+                grid.insert(point, Unit::Rock);
             }
         }
 
-        Ok(Self { grid, lowest_rock, floor: None })
+        Ok(Self {
+            grid,
+            lowest_rock,
+            floor: None,
+        })
     }
 }

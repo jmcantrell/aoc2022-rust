@@ -3,23 +3,22 @@ use std::ops::RangeInclusive;
 
 use anyhow::{anyhow, ensure, Context};
 
-use crate::core::{BreadCrumbs, Cell, Grid, Location, Path};
+use geometry::{AxesBounds, Grid, GridLocation, Size};
+
+use crate::core::{BreadCrumbs, Path};
 
 pub type Height = usize;
-pub type HeightCell<'a> = Cell<'a, Height>;
 
 #[derive(Debug, Clone)]
 pub struct HeightMap {
     grid: Grid<Height>,
-    pub start: Location,
-    pub end: Location,
+    pub start: GridLocation,
+    pub end: GridLocation,
 }
 
 impl HeightMap {
     fn breadcrumbs(&self) -> BreadCrumbs {
-        BreadCrumbs::from_grid(&self.grid, self.end, |(_, a), (_, b)| {
-            a < b || a.abs_diff(*b) <= 1
-        })
+        BreadCrumbs::from_grid(&self.grid, self.end, |a, b| a < b || a.abs_diff(*b) <= 1)
     }
 
     pub fn find_shortest_path(&self) -> Option<Path> {
@@ -30,9 +29,9 @@ impl HeightMap {
         let breadcrumbs = self.breadcrumbs();
 
         self.grid
-            .cells()
-            .filter(|(_, &height)| height == 0)
-            .filter_map(move |(start, _)| breadcrumbs.path(start))
+            .row_major_locations()
+            .filter(|location| *self.grid.get(location).unwrap() == 0)
+            .filter_map(move |start| breadcrumbs.path(start))
     }
 }
 
@@ -59,7 +58,7 @@ impl TryFrom<&str> for HeightMap {
             }
         }
 
-        let mut cells = Vec::new();
+        let mut values = Vec::new();
 
         for (i, line) in lines.enumerate() {
             ensure!(
@@ -74,7 +73,7 @@ impl TryFrom<&str> for HeightMap {
                 let mut c = c;
 
                 if c == START || c == END {
-                    let location = Location { row: i, column: j };
+                    let location = GridLocation::new(j, i);
                     if c == START {
                         start = location;
                         c = *HEIGHT_RANGE.start();
@@ -87,11 +86,12 @@ impl TryFrom<&str> for HeightMap {
                 let height = parse_height(c)
                     .with_context(|| format!("line number {}, row number {}", i + 1, j + 1))?;
 
-                cells.push(height);
+                values.push(height);
             }
         }
 
-        let grid = Grid::try_from_cells(cells, width).context("invalid grid")?;
+        let size = Size::new(width, values.len() / width);
+        let grid = Grid::try_from((size, values))?;
 
         Ok(Self { grid, start, end })
     }

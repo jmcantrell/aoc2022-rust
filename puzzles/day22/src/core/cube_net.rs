@@ -5,17 +5,17 @@ use std::ops::Range;
 use anyhow::{anyhow, ensure, Context};
 use lazy_static::lazy_static;
 
-use crate::geometry::{
-    AxesBounds, Direction, Grid, Location, Rectangle, RelativeDirection, Size, DIRECTIONS,
-};
-use crate::math::gcd;
+use geometry::{AxesBounds, CardinalDirection::*, Grid, RelativeDirection};
+
+use super::{Direction, Extents, Location, Size};
+
+use RelativeDirection::*;
 
 const FACES_LEN: usize = 6;
 const NET_DIMS: Size = Size::square(5);
+const DIRECTIONS: [Direction; 4] = [North, South, West, East];
 
 type EdgeQuery = (RelativeDirection, Vec<RelativeDirection>);
-
-use RelativeDirection::*;
 
 lazy_static! {
     // I'm not sure if this approach is a precise or provable way to identify each of the eleven
@@ -39,31 +39,31 @@ lazy_static! {
     // the direction of the edge that is being matched.
 
     static ref EDGE_QUERIES: Vec<EdgeQuery> = vec![
-        (Backward, vec![Backward, Forward, Forward]),
-        (Backward, vec![Backward, Left, Right, Forward, Left]),
-        (Backward, vec![Backward, Right, Left, Forward, Right]),
-        (Backward, vec![Left, Forward, Left, Right, Forward]),
-        (Backward, vec![Left, Left, Forward, Right, Left]),
-        (Backward, vec![Left, Left, Right, Left, Right]),
-        (Backward, vec![Right, Forward, Right, Left, Forward]),
-        (Backward, vec![Right, Right, Forward, Left, Right]),
-        (Backward, vec![Right, Right, Left, Right, Left]),
-        (Forward, vec![Backward, Left, Forward]),
-        (Forward, vec![Backward, Right, Forward]),
-        (Forward, vec![Left, Forward, Forward, Right]),
-        (Forward, vec![Left, Forward, Right]),
-        (Forward, vec![Right, Forward, Forward, Left]),
-        (Forward, vec![Right, Forward, Left]),
-        (Left, vec![Backward, Forward, Right, Left]),
-        (Left, vec![Backward, Right, Left, Right]),
-        (Left, vec![Left, Left, Right, Forward]),
+        (Down, vec![Down, Left, Right, Up, Left]),
+        (Down, vec![Down, Right, Left, Up, Right]),
+        (Down, vec![Down, Up, Up]),
+        (Down, vec![Left, Left, Right, Left, Right]),
+        (Down, vec![Left, Left, Up, Right, Left]),
+        (Down, vec![Left, Up, Left, Right, Up]),
+        (Down, vec![Right, Right, Left, Right, Left]),
+        (Down, vec![Right, Right, Up, Left, Right]),
+        (Down, vec![Right, Up, Right, Left, Up]),
+        (Left, vec![Down, Right, Left, Right]),
+        (Left, vec![Down, Up, Right, Left]),
+        (Left, vec![Left, Left, Right, Up]),
         (Left, vec![Right, Left]),
-        (Left, vec![Right, Right, Forward, Forward]),
-        (Right, vec![Backward, Forward, Left, Right]),
-        (Right, vec![Backward, Left, Right, Left]),
-        (Right, vec![Left, Left, Forward, Forward]),
+        (Left, vec![Right, Right, Up, Up]),
+        (Right, vec![Down, Left, Right, Left]),
+        (Right, vec![Down, Up, Left, Right]),
+        (Right, vec![Left, Left, Up, Up]),
         (Right, vec![Left, Right]),
-        (Right, vec![Right, Right, Left, Forward]),
+        (Right, vec![Right, Right, Left, Up]),
+        (Up, vec![Down, Left, Up]),
+        (Up, vec![Down, Right, Up]),
+        (Up, vec![Left, Up, Right]),
+        (Up, vec![Left, Up, Up, Right]),
+        (Up, vec![Right, Up, Left]),
+        (Up, vec![Right, Up, Up, Left]),
     ];
 }
 
@@ -82,7 +82,7 @@ pub struct CubeNet {
 
 impl CubeNet {
     pub fn iter(&self) -> impl Iterator<Item = (Location, &Face, &Adjacency)> {
-        self.faces.locations_by_row().filter_map(|location| {
+        self.faces.row_major_locations().filter_map(|location| {
             let face = self.faces.get_some(&location)?;
             let adjacency = self.edges.get(&location).unwrap();
             Some((location, face, adjacency))
@@ -90,7 +90,7 @@ impl CubeNet {
     }
 }
 
-impl AxesBounds for CubeNet {
+impl AxesBounds<usize> for CubeNet {
     fn vertical_bounds(&self) -> Range<usize> {
         self.faces.vertical_bounds()
     }
@@ -119,13 +119,22 @@ impl fmt::Display for CubeNet {
     }
 }
 
+pub fn gcd(mut a: usize, mut b: usize) -> usize {
+    while b != 0 {
+        let tmp = b;
+        b = a % b;
+        a = tmp
+    }
+    a
+}
+
 fn map_adjacency<T>(net: &Net<T>) -> Edges {
     let mut frontier: Vec<Location> = Vec::new();
     let mut reached: HashSet<Location> = HashSet::new();
     let mut edges = Edges::new();
 
     if let Some(start) = net
-        .locations_by_row()
+        .row_major_locations()
         .find(|location| net.contains_some(location))
     {
         frontier.push(start);
@@ -203,21 +212,20 @@ impl<T> TryFrom<&Net<T>> for CubeNet {
         let net_size = NET_DIMS * face_size;
         let mut faces: Vec<Option<Face>> = Vec::with_capacity(net_size.area());
 
-        let inner_offset = Size::from(inner.top_left);
-
         for top_left in NET_DIMS
-            .locations_by_row()
-            .map(|start| start * face_size + inner_offset)
+            .row_major_locations()
+            .map(|start| start * face_size + inner.top_left)
         {
             if !net.contains_some(&top_left) {
                 faces.push(None);
                 continue;
             }
 
-            let face_bounds: Rectangle = (top_left, face_size).into();
+            let bottom_right = top_left + face_size - Size::square(1);
+            let face_bounds = Extents::new(top_left, bottom_right);
             let mut face_values: Vec<Location> = Vec::with_capacity(face_area);
 
-            for location in face_bounds.locations_by_row() {
+            for location in face_bounds.row_major_locations() {
                 ensure!(
                     net.contains_some(&location),
                     "expected a non-empty cell at {}",
@@ -265,7 +273,7 @@ impl<T> TryFrom<&Net<T>> for CubeNet {
 mod tests {
     use itertools::Itertools;
 
-    use crate::geometry::index_for_location;
+    use geometry::index_for_location;
 
     use super::*;
 
@@ -326,19 +334,19 @@ mod tests {
         let inner = net.bounds_some().unwrap();
 
         let values = inner
-            .locations_by_row()
+            .row_major_locations()
             .map(|location| net.get_mut(&location).unwrap().take())
             .collect();
 
         Net::try_from((inner.size(), values)).unwrap()
     }
 
-    fn transpose_net<T: Clone>(net: Net<T>) -> Net<T> {
+    fn transpose_net<T: std::fmt::Debug + Clone>(net: Net<T>) -> Net<T> {
         let size = net.size().transpose();
         let mut values = vec![None; size.area()];
 
         for (location, value) in net {
-            values[dbg!(index_for_location(&location.transpose(), size.width))] = value;
+            values[index_for_location(&location.transpose(), size.width())] = value;
         }
 
         Net::try_from((size, values)).unwrap()
@@ -349,7 +357,7 @@ mod tests {
             for location in row {
                 net.swap(
                     &location,
-                    &Location::new(net.bottom() - location.row, location.column),
+                    &Location::new(location.x, net.bottom() - location.y),
                 );
             }
         }
@@ -446,8 +454,7 @@ mod tests {
     #[ignore]
     fn invalid_cube_nets_are_not_recognized() -> anyhow::Result<()> {
         for net in invalid_cube_nets() {
-            if let Ok(cube_net) = CubeNet::try_from(&net) {
-                dbg!(cube_net);
+            if CubeNet::try_from(&net).is_ok() {
                 return Err(anyhow!(
                     "net shape falsely recognized as valid:\n{}",
                     describe_net(&net)

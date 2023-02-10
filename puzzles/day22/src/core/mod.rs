@@ -1,3 +1,8 @@
+pub type Size = geometry::Size<usize>;
+pub type Extents = geometry::Rectangle<usize>;
+pub type Location = geometry::Location<usize>;
+pub type Direction = geometry::CardinalDirection;
+
 pub mod cube_net;
 pub use cube_net::*;
 
