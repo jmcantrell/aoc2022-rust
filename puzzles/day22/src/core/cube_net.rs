@@ -5,10 +5,11 @@ use std::ops::Range;
 use anyhow::{anyhow, ensure, Context};
 use lazy_static::lazy_static;
 
-use geometry::{AxesBounds, CardinalDirection::*, Grid, RelativeDirection};
+use geometry::{AxesBounds, CardinalDirection, Grid, RelativeDirection};
 
 use super::{Direction, Extents, Location, Size};
 
+use CardinalDirection::*;
 use RelativeDirection::*;
 
 const FACES_LEN: usize = 6;
@@ -18,25 +19,25 @@ const DIRECTIONS: [Direction; 4] = [North, South, West, East];
 type EdgeQuery = (RelativeDirection, Vec<RelativeDirection>);
 
 lazy_static! {
-    // I'm not sure if this approach is a precise or provable way to identify each of the eleven
-    // possible patterns for a valid polyhedral net for a cube. This method does identify the
-    // eleven variations, but I'm not sure if it will identify false positives.
-    //
-    // What I'm calling an edge query is just an encoding for a test of whether another face exists
-    // in the net after following some pattern of moves away from the starting face. They're
-    // encoded with relative directions so that they can be used for any edge surrounding the
-    // starting face.
-    //
-    // The first item in each tuple is the edge of the target face that will be adjoining the
-    // origin face relative to the edge of the origin face. For example, if we're trying to find
-    // the face that adjoins the origin face at the north edge, if the first item of the tuple is
-    // `Right`, then the edge of the candidate face that it will adjoin to will be the east edge,
-    //
-    // because east is to the right of north. The second item in the tuple is the path that needs
-    // to be traversed to get to the candidate face. Each step in the path represents a turn that
-    // needs to be made before moving a single step in the forward direction. For example, a `Left`
-    // step means to first turn left, then take a single step forward. The starting direction is
-    // the direction of the edge that is being matched.
+    /// I'm not sure if this approach is a precise or provable way to validate a polyhedral net as
+    /// one of the possible patterns for a cube. This method does identify the eleven variations,
+    /// but I'm not sure if it will identify false positives.
+    ///
+    /// What I'm calling an edge query is just an encoding for a test of whether another face exists
+    /// in the net after following some pattern of moves away from the starting face. They're
+    /// encoded with relative directions so that they can be used for any edge surrounding the
+    /// starting face.
+    ///
+    /// The first item in each tuple is the edge of the target face that will be adjoining the
+    /// origin face relative to the edge of the origin face. For example, if we're trying to find
+    /// the face that adjoins the origin face at the north edge, if the first item of the tuple is
+    /// `Right`, then the edge of the candidate face that it will adjoin to will be the east edge,
+    /// because east is to the right of north.
+    ///
+    /// The second item in the tuple is the path that needs to be traversed to get to the candidate
+    /// face. Each step in the path represents a turn that needs to be made before moving a single
+    /// step forward. For example, a `Left` step means to first turn left, then take a single step
+    /// forward. The starting direction is the direction of the edge that is being matched.
 
     static ref EDGE_QUERIES: Vec<EdgeQuery> = vec![
         (Down, vec![Down, Left, Right, Up, Left]),
@@ -80,16 +81,6 @@ pub struct CubeNet {
     pub edges: Edges,
 }
 
-impl CubeNet {
-    pub fn iter(&self) -> impl Iterator<Item = (Location, &Face, &Adjacency)> {
-        self.faces.row_major_locations().filter_map(|location| {
-            let face = self.faces.get_some(&location)?;
-            let adjacency = self.edges.get(&location).unwrap();
-            Some((location, face, adjacency))
-        })
-    }
-}
-
 impl AxesBounds<usize> for CubeNet {
     fn vertical_bounds(&self) -> Range<usize> {
         self.faces.vertical_bounds()
@@ -100,22 +91,25 @@ impl AxesBounds<usize> for CubeNet {
     }
 }
 
+fn describe_net<T>(net: &Net<T>) -> String {
+    let mut description = String::new();
+
+    for row in net.row_groups() {
+        for location in row {
+            description.push(match net.get(&location).unwrap() {
+                Some(_) => '#',
+                None => '.',
+            });
+        }
+        description.push('\n');
+    }
+
+    description
+}
+
 impl fmt::Display for CubeNet {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        for row in self.faces.row_groups() {
-            for location in row {
-                write!(
-                    f,
-                    "{}",
-                    match self.faces.get(&location).unwrap() {
-                        Some(_) => '#',
-                        None => '.',
-                    }
-                )?;
-            }
-            writeln!(f)?;
-        }
-        Ok(())
+        write!(f, "{}", describe_net(&self.faces))
     }
 }
 
@@ -204,9 +198,9 @@ impl<T> TryFrom<&Net<T>> for CubeNet {
 
     fn try_from(net: &Net<T>) -> Result<Self, Self::Error> {
         let inner = net.bounds_some().context("net is empty")?;
+        let inner_size = gcd(inner.height(), inner.width());
 
-        let size = gcd(inner.height(), inner.width());
-        let face_size = Size::square(size);
+        let face_size = Size::square(inner_size);
         let face_area = face_size.area();
 
         let net_size = NET_DIMS * face_size;
@@ -265,7 +259,11 @@ impl<T> TryFrom<&Net<T>> for CubeNet {
             }
         }
 
-        Ok(Self { size, faces, edges })
+        Ok(Self {
+            size: inner_size,
+            faces,
+            edges,
+        })
     }
 }
 
@@ -280,6 +278,10 @@ mod tests {
     type NetKey = u32;
 
     lazy_static! {
+        /// The minimum space required for every possible polyhedral net that could possibly be a
+        /// cube is a 5x5 grid. One way to represent this is a bit string of length 25. The
+        /// following are the canonical representations of the eleven valid cube nets.
+
         static ref VALID_CUBE_NETS: [NetKey; 11] = [
             0b1110001000010000100000000,
             0b0110011000010000100000000,
@@ -364,6 +366,9 @@ mod tests {
         net
     }
 
+    /// This generates every possible valid cube net by taking the canonical representations
+    /// defined earlier and extending that list with every flipped and rotate variation of each.
+
     fn valid_cube_nets() -> impl Iterator<Item = (usize, Net<usize>)> {
         VALID_CUBE_NETS
             .into_iter()
@@ -384,26 +389,19 @@ mod tests {
             })
     }
 
+    /// This generates every possible polyhedral net that will fit in a 5x5 grid. Obviously this
+    /// will include the valid cube nets as well, so they will have to be filtered out later.
+
     fn possible_nets() -> impl Iterator<Item = Net<usize>> {
         let n = NET_DIMS.area();
-        (0..n).combinations(FACES_LEN).flat_map(move |positions| {
+        (0..n).combinations(FACES_LEN).map(move |positions| {
             let mut values = vec![None; n];
 
             for (j, i) in positions.into_iter().enumerate() {
                 values[i] = Some(j);
             }
 
-            let mut net = Net::try_from((NET_DIMS, values)).unwrap();
-            let mut variations = Vec::with_capacity(DIRECTIONS.len() * 2);
-
-            for _ in DIRECTIONS {
-                variations.push(trim_net(net.clone()));
-                net = transpose_net(net);
-                variations.push(trim_net(net.clone()));
-                net = flip_net(net);
-            }
-
-            variations.into_iter()
+            Net::try_from((NET_DIMS, values)).unwrap()
         })
     }
 
@@ -415,32 +413,11 @@ mod tests {
         possible_nets().filter_map(move |net| {
             let net = trim_net(net);
             let key = key_from_net(&net);
-            if !valid_cube_nets.contains(&key) {
-                Some(net)
-            } else {
-                None
-            }
+            (!valid_cube_nets.contains(&key)).then_some(net)
         })
     }
 
-    fn describe_net<T>(net: &Net<T>) -> String {
-        let mut description = String::new();
-
-        for row in net.row_groups() {
-            for location in row {
-                description.push(match net.get(&location).unwrap() {
-                    Some(_) => '#',
-                    None => '.',
-                });
-            }
-            description.push('\n');
-        }
-
-        description
-    }
-
     #[test]
-    #[ignore]
     fn valid_cube_nets_are_recognized() -> anyhow::Result<()> {
         for (shape, net) in valid_cube_nets() {
             CubeNet::try_from(&net).with_context(|| {
@@ -451,7 +428,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
     fn invalid_cube_nets_are_not_recognized() -> anyhow::Result<()> {
         for net in invalid_cube_nets() {
             if CubeNet::try_from(&net).is_ok() {

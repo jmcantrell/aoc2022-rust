@@ -9,11 +9,11 @@ edition = "2021"
 anyhow = "1.0"
 aoc = { path = "../../lib/aoc" }
 geometry = { path = "../../lib/geometry" }
-lazy_static = "1.4.0"
+lazy_static = "1.4"
 
 [dev-dependencies]
 criterion = "0.4"
-itertools = "0.10.5"
+itertools = "0.10"
 
 [[bench]]
 name = "aoc"

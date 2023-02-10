@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use super::{Map, Tile, Walk, Walker, Location, Direction};
+use super::{Direction, Location, Map, Tile, Walk, Walker};
 
 type Portals = HashMap<Location, Location>;
 

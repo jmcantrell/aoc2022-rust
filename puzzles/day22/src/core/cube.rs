@@ -29,8 +29,8 @@ impl IndexTransform {
     }
 }
 
-use geometry::CardinalDirection::*;
 use IndexTransform::*;
+use geometry::CardinalDirection::*;
 
 lazy_static! {
     static ref EDGE_TRANSITIONS: HashMap<(Direction, Direction), (IndexTransform, IndexTransform)> =
