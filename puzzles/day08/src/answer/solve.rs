@@ -1,5 +1,3 @@
-use anyhow::Context;
-
 use super::{Parsed1, Parsed2};
 
 pub type Solution = usize;
@@ -7,15 +5,11 @@ pub type Solution1 = Solution;
 pub type Solution2 = Solution;
 
 pub fn solve1(tree_patch: &Parsed1) -> anyhow::Result<Solution1> {
-    Ok(tree_patch.visibility().count())
+    Ok(tree_patch.count_visible())
 }
 
 pub fn solve2(tree_patch: &Parsed2) -> anyhow::Result<Solution2> {
-    tree_patch
-        .scenic_scores()
-        .map(|(_, score)| score)
-        .max()
-        .context("grid is empty")
+    Ok(tree_patch.max_scenic_score())
 }
 
 #[cfg(test)]
