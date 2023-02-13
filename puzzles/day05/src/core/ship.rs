@@ -81,7 +81,7 @@ impl TryFrom<&str> for Stacks {
         let mut stacks: Vec<Vec<Crate>> = vec![Default::default(); num_stacks];
 
         rows.into_iter().for_each(|row| {
-            row.into_iter().filter_map(|o| o).for_each(|(i, mark)| {
+            row.into_iter().flatten().for_each(|(i, mark)| {
                 stacks[i].push(mark);
             });
         });

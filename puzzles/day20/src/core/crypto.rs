@@ -41,7 +41,7 @@ impl Decryptor {
                 self.indices.rotate_left(i);
 
                 let popped = self.indices.pop_front().unwrap();
-                let shift = (value as isize).rem_euclid(n - 1) as usize;
+                let shift = value.rem_euclid(n - 1) as usize;
 
                 self.indices.rotate_left(shift);
                 self.indices.push_front(popped);

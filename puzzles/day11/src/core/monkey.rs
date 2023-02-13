@@ -30,21 +30,21 @@ impl TryFrom<&str> for Monkey {
         fn parse_item(s: &str) -> anyhow::Result<Item> {
             s.trim()
                 .parse()
-                .with_context(|| format!("invalid item: {:?}", s))
+                .with_context(|| format!("invalid item: {s:?}"))
         }
 
         fn parse_items(s: &str) -> anyhow::Result<VecDeque<Item>> {
             prefix(s, "Starting items:")?
-                .split(",")
+                .split(',')
                 .enumerate()
                 .map(|(i, s)| parse_item(s).with_context(|| format!("item number {}", i + 1)))
                 .collect::<Result<VecDeque<_>, _>>()
-                .with_context(|| format!("invalid starting items: {:?}", s))
+                .with_context(|| format!("invalid starting items: {s:?}"))
         }
 
         fn parse_test<'a>(iter: &mut impl Iterator<Item = &'a str>) -> anyhow::Result<Test> {
             let s = iter.take(3).collect::<Vec<_>>().join("\n");
-            Test::try_from(s.as_str()).with_context(|| format!("invalid test: {:?}", s))
+            Test::try_from(s.as_str()).with_context(|| format!("invalid test: {s:?}"))
         }
 
         let mut lines = s.lines().skip(1);
@@ -95,7 +95,7 @@ impl TryFrom<&str> for MonkeyTroop {
     fn try_from(s: &str) -> Result<Self, Self::Error> {
         fn parse_monkey(s: &str) -> anyhow::Result<Monkey> {
             s.try_into()
-                .with_context(|| format!("invalid monkey: {:?}", s))
+                .with_context(|| format!("invalid monkey: {s:?}"))
         }
 
         let monkeys = s

@@ -10,7 +10,7 @@ fn trail_size(moves: &Parsed, num_knots: usize) -> usize {
     let mut rope = Rope::new(num_knots);
 
     for vector in moves.iter() {
-        rope.drag(&vector);
+        rope.drag(vector);
     }
 
     rope.trail.len()

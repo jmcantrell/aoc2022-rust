@@ -8,8 +8,9 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0"
 aoc = { path = "../../lib/aoc" }
-geometry = { path = "../../lib/geometry" }
 lazy_static = "1.4"
+nalgebra = "0.32"
+num = "0.4"
 
 [dev-dependencies]
 criterion = "0.4"

@@ -1,7 +1,6 @@
 use anyhow::{anyhow, ensure, Context};
-use grid::Grid;
 
-use super::{ScenicScore, ScenicScores, Visibility};
+use super::{Grid, ScenicScore, ScenicScores, Visibility};
 
 pub type Height = u8;
 
@@ -12,7 +11,8 @@ pub struct TreePatch {
 
 impl TreePatch {
     fn iter_locations(&self) -> impl Iterator<Item = (usize, usize)> + '_ {
-        (0..self.grid.rows()).flat_map(move |row| (0..self.grid.cols()).map(move |col| (row, col)))
+        (0..self.grid.nrows())
+            .flat_map(move |row| (0..self.grid.ncols()).map(move |col| (row, col)))
     }
 }
 
@@ -20,14 +20,14 @@ impl TreePatch {
     pub fn count_visible(&self) -> usize {
         let visibility = Visibility::from(&self.grid);
         self.iter_locations()
-            .filter(|(row, col)| visibility.grid[*row][*col])
+            .filter(|loc| visibility.grid[*loc])
             .count()
     }
 
     pub fn max_scenic_score(&self) -> ScenicScore {
         let scenic_scores = ScenicScores::from(&self.grid);
         self.iter_locations()
-            .map(|(row, col)| scenic_scores.grid[row][col])
+            .map(|loc| scenic_scores.grid[loc])
             .max()
             .unwrap_or_default()
     }
@@ -59,31 +59,34 @@ impl TryFrom<&str> for TreePatch {
 
         ensure!(!rows.is_empty(), "grid is empty");
 
-        let cols = rows[0].len();
+        let nrows = rows.len();
+        let ncols = rows[0].len();
 
         for (i, row) in rows.iter().skip(1).enumerate() {
             ensure!(
-                row.len() == cols,
+                row.len() == ncols,
                 "expected row number {} to have {} columns, but it had {}",
                 i + 1,
-                cols,
+                ncols,
                 row.len()
             );
         }
 
-        let values: Vec<_> = rows.into_iter().flat_map(|row| row.into_iter()).collect();
+        let grid = Grid::from_row_iterator(
+            nrows,
+            ncols,
+            rows.into_iter().flat_map(|row| row.into_iter()),
+        );
 
-        Ok(Self {
-            grid: Grid::from_vec(values, cols),
-        })
+        Ok(Self { grid })
     }
 }
 
 impl std::fmt::Display for TreePatch {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        for row in 0..self.grid.rows() {
-            for col in 0..self.grid.cols() {
-                write!(f, "{}", self.grid[row][col])?;
+        for row in self.grid.row_iter() {
+            for value in row.iter() {
+                write!(f, "{value}")?;
             }
             writeln!(f)?;
         }

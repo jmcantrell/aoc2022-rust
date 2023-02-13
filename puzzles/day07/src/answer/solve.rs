@@ -14,7 +14,7 @@ pub fn solve1(output: &Parsed1) -> anyhow::Result<Solution1> {
         .filter(|&&size| size <= 100_000)
         .collect();
 
-    if sizes.len() > 0 {
+    if !sizes.is_empty() {
         Ok(sizes.into_iter().sum())
     } else {
         Err(anyhow!("no directories found"))

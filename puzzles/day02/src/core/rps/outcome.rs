@@ -1,6 +1,7 @@
 use super::Shape;
 
-pub const OUTCOMES: [Outcome; 3] = [Outcome::Lose, Outcome::Draw, Outcome::Win];
+use Outcome::*;
+pub const OUTCOMES: [Outcome; 3] = [Lose, Draw, Win];
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Outcome {
@@ -12,9 +13,9 @@ pub enum Outcome {
 impl Outcome {
     pub fn ensure(&self, against: &Shape) -> Shape {
         match self {
-            Outcome::Draw => against.clone(),
-            Outcome::Win => Shape::that_beats(against),
-            Outcome::Lose => Shape::that_is_beaten_by(against),
+            Draw => *against,
+            Win => Shape::that_beats(against),
+            Lose => Shape::that_is_beaten_by(against),
         }
     }
 }

@@ -1,11 +1,10 @@
 use std::fmt;
-use std::ops::Range;
 
 use anyhow::Context;
 
-use geometry::{AxesBounds, Grid};
+use super::{CardinalDirection, Grid, Location, Tile, Walker};
 
-use super::{Direction, Location, Tile, Walker};
+use CardinalDirection::*;
 
 #[derive(Debug, Clone)]
 pub struct Map {
@@ -15,45 +14,26 @@ pub struct Map {
 impl Map {
     pub fn origin(&self) -> Location {
         self.grid
-            .row_groups()
-            .next()
-            .expect("no rows")
-            .find(|location| self.grid[location].is_some())
-            .expect("no non-empty tiles in the first row")
+            .row_iter()
+            .enumerate()
+            .find_map(|(i, row)| {
+                row.iter()
+                    .enumerate()
+                    .find_map(|(j, value)| value.is_some().then_some((i, j)))
+            })
+            .expect("grid is empty")
     }
 
     pub fn walker(&self) -> Walker {
-        Walker::new(self.clone(), self.origin(), Direction::East)
-    }
-}
-
-impl AxesBounds<usize> for Map {
-    fn vertical_bounds(&self) -> Range<usize> {
-        self.grid.vertical_bounds()
-    }
-
-    fn horizontal_bounds(&self) -> Range<usize> {
-        self.grid.horizontal_bounds()
-    }
-}
-
-impl From<Grid<Option<Tile>>> for Map {
-    fn from(grid: Grid<Option<Tile>>) -> Self {
-        Self { grid }
-    }
-}
-
-impl From<Map> for Grid<Option<Tile>> {
-    fn from(map: Map) -> Grid<Option<Tile>> {
-        map.grid
+        Walker::new(self.clone(), self.origin(), East)
     }
 }
 
 impl fmt::Display for Map {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        for row in self.grid.row_groups() {
-            for location in row {
-                match self.grid.get(&location).unwrap().as_ref() {
+        for row in self.grid.row_iter() {
+            for maybe_tile in row.iter() {
+                match maybe_tile {
                     Some(tile) => {
                         write!(f, "{tile}")?;
                     }
@@ -88,22 +68,25 @@ impl TryFrom<Vec<&str>> for Map {
                 .collect::<Result<Vec<_>, _>>()
         }
 
-        let mut grid = lines
+        let mut rows = lines
             .into_iter()
             .enumerate()
             .map(|(i, s)| parse_row(s).with_context(|| format!("line number {}", i + 1)))
             .collect::<Result<Vec<Vec<_>>, _>>()?;
 
-        let width = grid.iter().map(|row| row.len()).max().unwrap_or_default();
+        let height = rows.len();
+        let width = rows.iter().map(|row| row.len()).max().unwrap_or_default();
 
-        for row in grid.iter_mut() {
+        for row in rows.iter_mut() {
             while row.len() < width {
                 row.push(None);
             }
         }
 
-        let grid: Grid<Option<Tile>> = grid.try_into()?;
+        let values = rows.into_iter().flat_map(|row| row.into_iter());
 
-        Ok(grid.into())
+        let grid: Grid<Option<Tile>> = Grid::from_row_iterator(height, width, values);
+
+        Ok(Self { grid })
     }
 }

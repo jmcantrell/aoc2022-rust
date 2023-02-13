@@ -36,7 +36,7 @@ impl<'a> TryFrom<&'a str> for Output<'a> {
         } else {
             let size: usize = first
                 .parse()
-                .with_context(|| format!("invalid integer: {:?}", first))?;
+                .with_context(|| format!("invalid integer: {first:?}"))?;
             let name = tokens.next().context("missing file name")?;
             Ok(Self::File { name, size })
         }
@@ -54,7 +54,7 @@ impl<'a> OutputLines<'a> {
             match item {
                 Output::Command(command) => match command {
                     Command::ChangeDirectory { name } => {
-                        file_system.set_directory(&name).with_context(|| {
+                        file_system.set_directory(name).with_context(|| {
                             format!("line {}, unable to change directory", i + 1)
                         })?;
                     }
@@ -82,7 +82,7 @@ impl<'a> TryFrom<&'a str> for OutputLines<'a> {
         Ok(Self(
             s.lines()
                 .enumerate()
-                .filter(|(_, s)| s.trim().len() > 0)
+                .filter(|(_, s)| !s.is_empty())
                 .map(|(i, s)| {
                     s.try_into()
                         .with_context(|| format!("line number {}", i + 1))

@@ -11,13 +11,10 @@ pub struct Cube {
 
 impl Cube {
     pub fn points(&self) -> impl Iterator<Item = Point> + '_ {
-        (self.min.x..=self.max.x)
-            .map(move |x| {
-                (self.min.y..=self.max.y)
-                    .map(move |y| (self.min.z..=self.max.z).map(move |z| Point { x, y, z }))
-                    .flatten()
-            })
-            .flatten()
+        (self.min.x..=self.max.x).flat_map(move |x| {
+            (self.min.y..=self.max.y)
+                .flat_map(move |y| (self.min.z..=self.max.z).map(move |z| Point { x, y, z }))
+        })
     }
 
     pub fn to_grid(&self) -> CubeGrid {

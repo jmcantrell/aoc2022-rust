@@ -1,6 +1,4 @@
-use grid::Grid;
-
-use super::{Direction, DIRECTIONS};
+use super::{Direction, Grid, Location, DIRECTIONS};
 
 pub type ScenicScore = usize;
 
@@ -11,33 +9,31 @@ pub struct ScenicScores {
 
 impl<T: PartialOrd> From<&Grid<T>> for ScenicScores {
     fn from(grid: &Grid<T>) -> Self {
-        let (rows, cols) = grid.size();
-        let mut results: Grid<ScenicScore> = Grid::init(rows, cols, 1);
+        let (nrows, ncols) = grid.shape();
+        let mut results: Grid<ScenicScore> = Grid::from_element(nrows, ncols, 1);
 
-        let neighbor = |row, col, dir: Direction| {
-            let (adj_row, adj_col) = dir.neighbor(row, col)?;
-            (adj_col < cols && adj_row < rows).then_some((adj_row, adj_col))
+        let neighbor = |loc: Location, dir: Direction| {
+            dir.neighbor(loc)
+                .and_then(|loc| grid.get(loc).is_some().then_some(loc))
         };
 
-        for (start_row, start_col) in (0..rows).flat_map(|row| (0..cols).map(move |col| (row, col))) {
-            let start_height = &grid[start_row][start_col];
+        for start in (0..nrows).flat_map(|row| (0..ncols).map(move |col| (row, col))) {
+            let start_height = &grid[start];
 
             for dir in DIRECTIONS {
                 let mut score = 0;
-                let mut row = start_row;
-                let mut col = start_col;
+                let mut loc = start;
 
-                while let Some((adj_row, adj_col)) = neighbor(row, col, dir) {
+                while let Some(adj) = neighbor(loc, dir) {
                     score += 1;
-                    row = adj_row;
-                    col = adj_col;
+                    loc = adj;
 
-                    if &grid[adj_row][adj_col] >= start_height {
+                    if &grid[loc] >= start_height {
                         break;
                     }
                 }
 
-                results[start_row][start_col] *= score;
+                results[start] *= score;
             }
         }
 

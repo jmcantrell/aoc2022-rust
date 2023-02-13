@@ -1,4 +1,2 @@
-use std::ops::RangeInclusive;
-
 pub type Section = usize;
-pub type SectionRange = RangeInclusive<Section>;
+pub type SectionRange = std::ops::RangeInclusive<Section>;

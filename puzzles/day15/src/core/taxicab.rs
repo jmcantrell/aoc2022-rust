@@ -61,8 +61,8 @@ mod tests {
         let max_dist: isize = 10;
 
         for i in -max_dist..=max_dist {
-            assert_distance!((i, 0), i.abs());
-            assert_distance!((0, i), i.abs());
+            assert_distance!([i, 0], i.abs());
+            assert_distance!([0, i], i.abs());
         }
     }
 
@@ -71,9 +71,9 @@ mod tests {
         let dist: isize = 10;
         let half = dist / 2;
 
-        assert_distance!((half, half), dist);
-        assert_distance!((-half, half), dist);
-        assert_distance!((half, -half), dist);
-        assert_distance!((-half, -half), dist);
+        assert_distance!([half, half], dist);
+        assert_distance!([-half, half], dist);
+        assert_distance!([half, -half], dist);
+        assert_distance!([-half, -half], dist);
     }
 }

@@ -35,7 +35,7 @@ impl TryFrom<&str> for Command {
                     .context("{:?} command is missing it's argument")?;
                 let value: isize = arg
                     .parse()
-                    .with_context(|| format!("invalid integer: {:?}", arg))?;
+                    .with_context(|| format!("invalid integer: {arg:?}"))?;
                 Ok(Self::AddX(value))
             }
             _ => Err(anyhow!("unrecognized command: {:?}", command)),

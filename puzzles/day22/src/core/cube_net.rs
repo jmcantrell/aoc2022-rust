@@ -1,20 +1,19 @@
 use std::collections::{hash_map::Entry, HashMap, HashSet};
 use std::fmt;
-use std::ops::Range;
 
 use anyhow::{anyhow, ensure, Context};
 use lazy_static::lazy_static;
+use num::integer::gcd;
 
-use geometry::{AxesBounds, CardinalDirection, Grid, RelativeDirection};
-
-use super::{Direction, Extents, Location, Size};
+use super::{CardinalDirection, Grid, Location, RelativeDirection, Size};
 
 use CardinalDirection::*;
 use RelativeDirection::*;
 
 const FACES_LEN: usize = 6;
-const NET_DIMS: Size = Size::square(5);
-const DIRECTIONS: [Direction; 4] = [North, South, West, East];
+const NET_SIZE: usize = 5;
+const NET_DIMS: Size = Size::new(NET_SIZE, NET_SIZE);
+const DIRECTIONS: [CardinalDirection; 4] = [North, South, West, East];
 
 type EdgeQuery = (RelativeDirection, Vec<RelativeDirection>);
 
@@ -40,38 +39,38 @@ lazy_static! {
     /// forward. The starting direction is the direction of the edge that is being matched.
 
     static ref EDGE_QUERIES: Vec<EdgeQuery> = vec![
-        (Down, vec![Down, Left, Right, Up, Left]),
-        (Down, vec![Down, Right, Left, Up, Right]),
-        (Down, vec![Down, Up, Up]),
-        (Down, vec![Left, Left, Right, Left, Right]),
-        (Down, vec![Left, Left, Up, Right, Left]),
-        (Down, vec![Left, Up, Left, Right, Up]),
-        (Down, vec![Right, Right, Left, Right, Left]),
-        (Down, vec![Right, Right, Up, Left, Right]),
-        (Down, vec![Right, Up, Right, Left, Up]),
-        (Left, vec![Down, Right, Left, Right]),
-        (Left, vec![Down, Up, Right, Left]),
-        (Left, vec![Left, Left, Right, Up]),
+        (Backward, vec![Backward, Forward, Forward]),
+        (Backward, vec![Backward, Left, Right, Forward, Left]),
+        (Backward, vec![Backward, Right, Left, Forward, Right]),
+        (Backward, vec![Left, Forward, Left, Right, Forward]),
+        (Backward, vec![Left, Left, Forward, Right, Left]),
+        (Backward, vec![Left, Left, Right, Left, Right]),
+        (Backward, vec![Right, Forward, Right, Left, Forward]),
+        (Backward, vec![Right, Right, Forward, Left, Right]),
+        (Backward, vec![Right, Right, Left, Right, Left]),
+        (Forward, vec![Backward, Left, Forward]),
+        (Forward, vec![Backward, Right, Forward]),
+        (Forward, vec![Left, Forward, Forward, Right]),
+        (Forward, vec![Left, Forward, Right]),
+        (Forward, vec![Right, Forward, Forward, Left]),
+        (Forward, vec![Right, Forward, Left]),
+        (Left, vec![Backward, Forward, Right, Left]),
+        (Left, vec![Backward, Right, Left, Right]),
+        (Left, vec![Left, Left, Right, Forward]),
         (Left, vec![Right, Left]),
-        (Left, vec![Right, Right, Up, Up]),
-        (Right, vec![Down, Left, Right, Left]),
-        (Right, vec![Down, Up, Left, Right]),
-        (Right, vec![Left, Left, Up, Up]),
+        (Left, vec![Right, Right, Forward, Forward]),
+        (Right, vec![Backward, Forward, Left, Right]),
+        (Right, vec![Backward, Left, Right, Left]),
+        (Right, vec![Left, Left, Forward, Forward]),
         (Right, vec![Left, Right]),
-        (Right, vec![Right, Right, Left, Up]),
-        (Up, vec![Down, Left, Up]),
-        (Up, vec![Down, Right, Up]),
-        (Up, vec![Left, Up, Right]),
-        (Up, vec![Left, Up, Up, Right]),
-        (Up, vec![Right, Up, Left]),
-        (Up, vec![Right, Up, Up, Left]),
+        (Right, vec![Right, Right, Left, Forward]),
     ];
 }
 
 pub type Net<T> = Grid<Option<T>>;
 pub type Face = Grid<Location>;
 pub type Faces = Net<Face>;
-pub type Adjacency = HashMap<Direction, (Direction, Location)>;
+pub type Adjacency = HashMap<CardinalDirection, (CardinalDirection, Location)>;
 pub type Edges = HashMap<Location, Adjacency>;
 
 #[derive(Debug, Clone)]
@@ -81,22 +80,12 @@ pub struct CubeNet {
     pub edges: Edges,
 }
 
-impl AxesBounds<usize> for CubeNet {
-    fn vertical_bounds(&self) -> Range<usize> {
-        self.faces.vertical_bounds()
-    }
-
-    fn horizontal_bounds(&self) -> Range<usize> {
-        self.faces.horizontal_bounds()
-    }
-}
-
 fn describe_net<T>(net: &Net<T>) -> String {
     let mut description = String::new();
 
-    for row in net.row_groups() {
-        for location in row {
-            description.push(match net.get(&location).unwrap() {
+    for row in net.row_iter() {
+        for value in row.iter() {
+            description.push(match value {
                 Some(_) => '#',
                 None => '.',
             });
@@ -113,23 +102,41 @@ impl fmt::Display for CubeNet {
     }
 }
 
-pub fn gcd(mut a: usize, mut b: usize) -> usize {
-    while b != 0 {
-        let tmp = b;
-        b = a % b;
-        a = tmp
-    }
-    a
+fn inner_some<T>(grid: &Grid<Option<T>>) -> Option<(Location, Location)> {
+    let (nrows, ncols) = grid.shape();
+
+    let top = (0..nrows).find(|&i| grid.row(i).iter().any(|val| val.is_some()))?;
+
+    let bottom = (0..nrows)
+        .rev()
+        .find(|&i| grid.row(i).iter().any(|val| val.is_some()))
+        .unwrap_or(top);
+
+    let left = (0..ncols)
+        .find(|&i| grid.column(i).iter().any(|val| val.is_some()))
+        .unwrap();
+
+    let right = (0..ncols)
+        .rev()
+        .find(|&i| grid.column(i).iter().any(|val| val.is_some()))
+        .unwrap_or(left);
+
+    Some(((top, left), (bottom, right)))
 }
 
-fn map_adjacency<T>(net: &Net<T>) -> Edges {
+fn map_adjacency<T: std::fmt::Debug>(net: &Net<T>) -> Edges {
     let mut frontier: Vec<Location> = Vec::new();
     let mut reached: HashSet<Location> = HashSet::new();
     let mut edges = Edges::new();
 
-    if let Some(start) = net
-        .row_major_locations()
-        .find(|location| net.contains_some(location))
+    let neighbor = |loc: Location, dir: CardinalDirection| -> Option<Location> {
+        dir.neighbor(loc)
+            .and_then(|adj| net.get(adj).and_then(|val| val.is_some().then_some(adj)))
+    };
+
+    if let Some(start) = (0..net.nrows())
+        .flat_map(|row| (0..net.ncols()).map(move |col| (row, col)))
+        .find(|&loc| net[loc].is_some())
     {
         frontier.push(start);
         reached.insert(start);
@@ -137,7 +144,7 @@ fn map_adjacency<T>(net: &Net<T>) -> Edges {
 
     while let Some(current) = frontier.pop() {
         for edge in DIRECTIONS {
-            if let Some(next) = net.neighbor_some(&current, &edge) {
+            if let Some(next) = neighbor(current, edge) {
                 edges
                     .entry(current)
                     .or_default()
@@ -154,6 +161,11 @@ fn map_adjacency<T>(net: &Net<T>) -> Edges {
 }
 
 fn try_wrap_edges<T>(net: &Net<T>, mut edges: Edges) -> anyhow::Result<Edges> {
+    let neighbor = |loc: Location, dir: CardinalDirection| -> Option<Location> {
+        dir.neighbor(loc)
+            .and_then(|adj| net.get(adj).and_then(|val| val.is_some().then_some(adj)))
+    };
+
     for (&start, adjacency) in edges.iter_mut() {
         for edge in DIRECTIONS {
             if adjacency.contains_key(&edge) {
@@ -161,13 +173,13 @@ fn try_wrap_edges<T>(net: &Net<T>, mut edges: Edges) -> anyhow::Result<Edges> {
             }
 
             'search: for (other_edge_relative, path) in EDGE_QUERIES.iter() {
-                let mut location = start;
-                let mut direction = edge;
+                let mut loc = start;
+                let mut dir = edge;
 
-                for turn_relative in path.iter() {
-                    direction += *turn_relative;
-                    if let Some(next_location) = net.neighbor_some(&location, &direction) {
-                        location = next_location;
+                for turn in path.iter() {
+                    dir += *turn;
+                    if let Some(next_loc) = neighbor(loc, dir) {
+                        loc = next_loc;
                     } else {
                         continue 'search;
                     }
@@ -175,14 +187,14 @@ fn try_wrap_edges<T>(net: &Net<T>, mut edges: Edges) -> anyhow::Result<Edges> {
 
                 let other_edge = edge + *other_edge_relative;
 
-                if !net.has_some_neighbor(&location, &other_edge) {
+                if neighbor(loc, other_edge).is_none() {
                     match adjacency.entry(edge) {
                         Entry::Occupied(entry) => {
                             let (other_edge, end) = entry.get();
-                            return Err(anyhow!("existing {edge} edge found for {start} => {other_edge} edge of {end}"));
+                            return Err(anyhow!("existing {edge} edge found for row {} and column {} => {other_edge} edge of row {} and column {}", start.0, start.1, end.0, end.1));
                         }
                         Entry::Vacant(entry) => {
-                            entry.insert((other_edge, location));
+                            entry.insert((other_edge, loc));
                         }
                     }
                 }
@@ -197,39 +209,53 @@ impl<T> TryFrom<&Net<T>> for CubeNet {
     type Error = anyhow::Error;
 
     fn try_from(net: &Net<T>) -> Result<Self, Self::Error> {
-        let inner = net.bounds_some().context("net is empty")?;
-        let inner_size = gcd(inner.height(), inner.width());
+        let ((top, left), (bottom, right)) = inner_some(net).context("net is empty")?;
 
-        let face_size = Size::square(inner_size);
-        let face_area = face_size.area();
+        let height = bottom - top + 1;
+        let width = right - left + 1;
 
-        let net_size = NET_DIMS * face_size;
-        let mut faces: Vec<Option<Face>> = Vec::with_capacity(net_size.area());
+        let size = gcd(height, width);
 
-        for top_left in NET_DIMS
-            .row_major_locations()
-            .map(|start| start * face_size + inner.top_left)
+        let face_area = size * size;
+
+        let mut faces: Vec<Option<Face>> = Vec::with_capacity(NET_DIMS.product());
+
+        for (face_top, face_left) in (top..(top + size * NET_SIZE))
+            .step_by(size)
+            .flat_map(|row| {
+                (left..(left + size * NET_SIZE))
+                    .step_by(size)
+                    .map(move |col| (row, col))
+            })
         {
-            if !net.contains_some(&top_left) {
+            let face_top_left = (face_top, face_left);
+
+            if net
+                .get(face_top_left)
+                .map(|val| val.as_ref())
+                .unwrap_or_default()
+                .is_none()
+            {
                 faces.push(None);
                 continue;
             }
 
-            let bottom_right = top_left + face_size - Size::square(1);
-            let face_bounds = Extents::new(top_left, bottom_right);
-            let mut face_values: Vec<Location> = Vec::with_capacity(face_area);
+            let mut face = Vec::with_capacity(face_area);
 
-            for location in face_bounds.row_major_locations() {
+            for (face_row, face_col) in (face_top..(face_top + size))
+                .flat_map(|row| (face_left..(face_left + size)).map(move |col| (row, col)))
+            {
                 ensure!(
-                    net.contains_some(&location),
-                    "expected a non-empty cell at {}",
-                    location
+                    net[(face_row, face_col)].is_some(),
+                    "expected a non-empty value at row {} and column {}",
+                    face_row + 1,
+                    face_col + 1
                 );
 
-                face_values.push(location);
+                face.push((face_row, face_col));
             }
 
-            faces.push(Some(Face::try_from((face_size, face_values))?));
+            faces.push(Some(Face::from_row_iterator(size, size, face.into_iter())));
         }
 
         let faces_len = faces.iter().filter(|value| value.is_some()).count();
@@ -239,7 +265,7 @@ impl<T> TryFrom<&Net<T>> for CubeNet {
             "expected net pattern to have {FACES_LEN} faces, but it had {faces_len}",
         );
 
-        let faces = Net::try_from((NET_DIMS, faces))?;
+        let faces = Net::from_row_iterator(NET_SIZE, NET_SIZE, faces);
 
         let edges = map_adjacency(&faces);
 
@@ -250,28 +276,24 @@ impl<T> TryFrom<&Net<T>> for CubeNet {
 
         let edges = try_wrap_edges(&faces, edges)?;
 
-        for (face, adjacency) in edges.iter() {
+        for ((row, col), adjacency) in edges.iter() {
             for edge in DIRECTIONS {
                 ensure!(
                     adjacency.contains_key(&edge),
-                    "face at {face} is missing its {edge} edge"
+                    "face at row {} and column {} is missing its {edge} edge",
+                    row + 1,
+                    col + 1
                 );
             }
         }
 
-        Ok(Self {
-            size: inner_size,
-            faces,
-            edges,
-        })
+        Ok(Self { size, faces, edges })
     }
 }
 
 #[cfg(test)]
 mod tests {
     use itertools::Itertools;
-
-    use geometry::index_for_location;
 
     use super::*;
 
@@ -298,7 +320,7 @@ mod tests {
     }
 
     fn split_net_key(mut key: NetKey) -> Vec<bool> {
-        let net_len = NET_DIMS.area();
+        let net_len = NET_DIMS.x * NET_DIMS.y;
         let mut values = Vec::with_capacity(net_len);
 
         for _ in 0..net_len {
@@ -313,7 +335,7 @@ mod tests {
     fn key_from_net<T>(net: &Net<T>) -> NetKey {
         let mut key = 0;
 
-        for value in net.values() {
+        for value in net.iter() {
             key <<= 1;
             if value.is_some() {
                 key |= 1;
@@ -324,46 +346,23 @@ mod tests {
     }
 
     fn net_from_key(id: usize, key: NetKey) -> Net<usize> {
-        let values = split_net_key(key)
-            .into_iter()
-            .map(|is| if is { Some(id) } else { None })
-            .collect();
-
-        trim_net(Net::try_from((NET_DIMS, values)).unwrap())
+        Net::from_row_iterator(
+            NET_DIMS.y,
+            NET_DIMS.x,
+            split_net_key(key).into_iter().map(|is| is.then_some(id)),
+        )
     }
 
-    fn trim_net<T>(mut net: Net<T>) -> Net<T> {
-        let inner = net.bounds_some().unwrap();
-
-        let values = inner
-            .row_major_locations()
-            .map(|location| net.get_mut(&location).unwrap().take())
-            .collect();
-
-        Net::try_from((inner.size(), values)).unwrap()
-    }
-
-    fn transpose_net<T: std::fmt::Debug + Clone>(net: Net<T>) -> Net<T> {
-        let size = net.size().transpose();
-        let mut values = vec![None; size.area()];
-
-        for (location, value) in net {
-            values[index_for_location(&location.transpose(), size.width())] = value;
+    fn flip_net(net: &mut Net<usize>) {
+        let n = net.nrows();
+        for i in 0..(n / 2) {
+            net.swap_rows(i, n - i - 1);
         }
-
-        Net::try_from((size, values)).unwrap()
     }
 
-    fn flip_net<T>(mut net: Net<T>) -> Net<T> {
-        for row in net.row_groups().take(net.height() / 2) {
-            for location in row {
-                net.swap(
-                    &location,
-                    &Location::new(location.x, net.bottom() - location.y),
-                );
-            }
-        }
-        net
+    fn trim_net(net: Net<usize>) -> Net<usize> {
+        let ((top, left), (bottom, right)) = inner_some(&net).unwrap();
+        Net::from(net.view((top, left), (bottom - top + 1, right - left + 1)))
     }
 
     /// This generates every possible valid cube net by taking the canonical representations
@@ -380,9 +379,9 @@ mod tests {
 
                 for _ in DIRECTIONS {
                     variations.push((shape, trim_net(net.clone())));
-                    net = transpose_net(net);
+                    net = net.transpose();
                     variations.push((shape, trim_net(net.clone())));
-                    net = flip_net(net);
+                    flip_net(&mut net);
                 }
 
                 variations.into_iter()
@@ -393,7 +392,7 @@ mod tests {
     /// will include the valid cube nets as well, so they will have to be filtered out later.
 
     fn possible_nets() -> impl Iterator<Item = Net<usize>> {
-        let n = NET_DIMS.area();
+        let n = NET_DIMS.x * NET_DIMS.y;
         (0..n).combinations(FACES_LEN).map(move |positions| {
             let mut values = vec![None; n];
 
@@ -401,17 +400,20 @@ mod tests {
                 values[i] = Some(j);
             }
 
-            Net::try_from((NET_DIMS, values)).unwrap()
+            trim_net(Net::from_row_iterator(
+                NET_DIMS.y,
+                NET_DIMS.x,
+                values.into_iter(),
+            ))
         })
     }
 
     fn invalid_cube_nets() -> impl Iterator<Item = Net<usize>> {
         let valid_cube_nets: HashSet<NetKey> = valid_cube_nets()
-            .map(|(_, net)| key_from_net(&trim_net(net)))
+            .map(|(_, net)| key_from_net(&net))
             .collect();
 
         possible_nets().filter_map(move |net| {
-            let net = trim_net(net);
             let key = key_from_net(&net);
             (!valid_cube_nets.contains(&key)).then_some(net)
         })

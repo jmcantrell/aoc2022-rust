@@ -2,13 +2,16 @@ use std::fmt;
 
 use anyhow::anyhow;
 
-use super::Direction;
+use super::CardinalDirection;
+
+use CardinalDirection::*;
+use Tile::*;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Tile {
     Floor,
     Wall,
-    Trail(Direction),
+    Trail(CardinalDirection),
 }
 
 impl TryFrom<char> for Tile {
@@ -16,8 +19,8 @@ impl TryFrom<char> for Tile {
 
     fn try_from(c: char) -> Result<Self, Self::Error> {
         match c {
-            '.' => Ok(Self::Floor),
-            '#' => Ok(Self::Wall),
+            '.' => Ok(Floor),
+            '#' => Ok(Wall),
             _ => Err(anyhow!("invalid tile: {:?}", c)),
         }
     }
@@ -29,13 +32,13 @@ impl fmt::Display for Tile {
             f,
             "{}",
             match self {
-                Self::Floor => '.',
-                Self::Wall => '#',
-                Self::Trail(direction) => match direction {
-                    Direction::North => '^',
-                    Direction::South => 'v',
-                    Direction::West => '<',
-                    Direction::East => '>',
+                Floor => '.',
+                Wall => '#',
+                Trail(direction) => match direction {
+                    North => '^',
+                    South => 'v',
+                    West => '<',
+                    East => '>',
                 },
             }
         )?;

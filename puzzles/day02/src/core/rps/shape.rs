@@ -1,6 +1,9 @@
 use super::{Outcome, Score};
 
-pub const SHAPES: [Shape; 3] = [Shape::Rock, Shape::Paper, Shape::Scissors];
+use Shape::*;
+pub const SHAPES: [Shape; 3] = [Rock, Paper, Scissors];
+
+use Outcome::*;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Shape {
@@ -12,37 +15,37 @@ pub enum Shape {
 impl Shape {
     pub fn score(&self) -> Score {
         match self {
-            Self::Rock => 1,
-            Self::Paper => 2,
-            Self::Scissors => 3,
+            Rock => 1,
+            Paper => 2,
+            Scissors => 3,
         }
     }
 
     pub fn that_beats(shape: &Self) -> Self {
         match shape {
-            Self::Rock => Self::Paper,
-            Self::Paper => Self::Scissors,
-            Self::Scissors => Self::Rock,
+            Rock => Paper,
+            Paper => Scissors,
+            Scissors => Rock,
         }
     }
 
     pub fn that_is_beaten_by(shape: &Self) -> Self {
         match shape {
-            Self::Rock => Self::Scissors,
-            Self::Paper => Self::Rock,
-            Self::Scissors => Self::Paper,
+            Rock => Scissors,
+            Paper => Rock,
+            Scissors => Paper,
         }
     }
 
     pub fn against(&self, other: &Self) -> Outcome {
         if self != other {
             if *self == Shape::that_beats(other) {
-                Outcome::Win
+                Win
             } else {
-                Outcome::Lose
+                Lose
             }
         } else {
-            Outcome::Draw
+            Draw
         }
     }
 }

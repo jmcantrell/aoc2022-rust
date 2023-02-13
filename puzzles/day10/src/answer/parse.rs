@@ -11,7 +11,7 @@ pub type Parsed2 = Parsed;
 fn parse(input: Input) -> anyhow::Result<Parsed> {
     fn parse_command(s: &str) -> anyhow::Result<Command> {
         s.try_into()
-            .with_context(|| format!("invalid command: {:?}", s))
+            .with_context(|| format!("invalid command: {s:?}"))
     }
 
     input

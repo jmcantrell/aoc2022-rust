@@ -3,13 +3,13 @@ use std::convert::TryFrom;
 
 use anyhow::Context;
 
-use super::{manhattan_distance, Extents, Point, TaxicabCircle};
+use super::{manhattan_distance, Point, TaxicabCircle};
 
 #[derive(Debug, Default, Clone)]
 pub struct SensorGrid(HashMap<Point, Point>);
 
 impl SensorGrid {
-    pub fn extents(&self) -> Extents {
+    pub fn extents(&self) -> (Point, Point) {
         let mut top_left = Point::default();
         let mut bottom_right = Point::default();
 
@@ -39,7 +39,7 @@ impl SensorGrid {
             }
         }
 
-        Extents::new(top_left, bottom_right)
+        (top_left, bottom_right)
     }
 
     pub fn sensors(&self) -> impl Iterator<Item = &Point> {

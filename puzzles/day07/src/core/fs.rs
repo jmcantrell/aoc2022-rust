@@ -29,7 +29,7 @@ impl<'a> FileSystem<'a> {
                     self.current_directory = *self
                         .parents
                         .get(&self.current_directory)
-                        .with_context(|| format!("no parent directory: {:?}", name))?;
+                        .with_context(|| format!("no parent directory: {name:?}"))?;
                 }
             }
             _ => {
@@ -38,10 +38,10 @@ impl<'a> FileSystem<'a> {
                     .entry(self.current_directory)
                     .or_default()
                     .get(name)
-                    .with_context(|| format!("no such directory: {:?}", name))?;
+                    .with_context(|| format!("no such directory: {name:?}"))?;
 
                 if self.files.contains(&child_id) {
-                    anyhow::bail!("not a directory: {:?}", name);
+                    anyhow::bail!("not a directory: {name:?}");
                 }
 
                 self.current_directory = child_id;

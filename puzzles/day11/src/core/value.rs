@@ -25,7 +25,7 @@ impl TryFrom<&str> for Value {
             OLD => Ok(Value::Parameter),
             _ => Ok(Value::Const(
                 s.parse()
-                    .with_context(|| format!("invalid integer: {:?}", s))?,
+                    .with_context(|| format!("invalid integer: {s:?}"))?,
             )),
         }
     }

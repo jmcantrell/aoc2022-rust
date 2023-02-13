@@ -31,7 +31,7 @@ impl TryFrom<&str> for Operation {
     fn try_from(s: &str) -> anyhow::Result<Operation> {
         fn parse_operand(s: &str) -> anyhow::Result<Value> {
             s.try_into()
-                .with_context(|| format!("invalid value: {:?}", s))
+                .with_context(|| format!("invalid value: {s:?}"))
         }
 
         let s = prefix(s, "Operation:")?;

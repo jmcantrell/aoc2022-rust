@@ -1,4 +1,4 @@
-pub type Location = geometry::Location<isize>;
+pub type Location = nalgebra::Point2<isize>;
 
 pub mod cave;
 pub use cave::*;

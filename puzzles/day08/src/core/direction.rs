@@ -1,3 +1,5 @@
+use super::Location;
+
 use Direction::*;
 pub const DIRECTIONS: [Direction; 4] = [North, East, South, West];
 
@@ -10,7 +12,7 @@ pub enum Direction {
 }
 
 impl Direction {
-    pub fn neighbor(&self, row: usize, col: usize) -> Option<(usize, usize)> {
+    pub fn neighbor(&self, (row, col): Location) -> Option<Location> {
         match self {
             North => row.checked_sub(1).map(|row| (row, col)),
             South => row.checked_add(1).map(|row| (row, col)),

@@ -1,4 +1,4 @@
-use grid::Grid;
+use super::Grid;
 
 #[derive(Debug, Clone)]
 pub struct Visibility {
@@ -12,30 +12,31 @@ impl<T: PartialOrd> From<&Grid<T>> for Visibility {
             grid: &Grid<T>,
             mut line: impl Iterator<Item = (usize, usize)>,
         ) {
-            let (row, col) = line.next().unwrap();
-            *results.get_mut(row, col).unwrap() = true;
-            let mut max_height = grid.get(row, col).unwrap();
+            let loc = line.next().unwrap();
+            results[loc] = true;
 
-            for (row, col) in line {
-                let height = grid.get(row, col).unwrap();
+            let mut max_height = &grid[loc];
+
+            for loc in line {
+                let height = &grid[loc];
                 if height > max_height {
-                    *results.get_mut(row, col).unwrap() = true;
+                    results[loc] = true;
                     max_height = height;
                 }
             }
         }
 
-        let (rows, cols) = grid.size();
-        let mut results: Grid<bool> = Grid::new(rows, cols);
+        let (nrows, ncols) = grid.shape();
+        let mut results: Grid<bool> = Grid::from_element(nrows, ncols, false);
 
-        for row in 0..rows {
-            let line = (0..cols).map(|col| (row, col));
+        for row in 0..nrows {
+            let line = (0..ncols).map(|col| (row, col));
             scan_line(&mut results, grid, line.clone());
             scan_line(&mut results, grid, line.rev());
         }
 
-        for col in 0..cols {
-            let line = (0..rows).map(|row| (row, col));
+        for col in 0..ncols {
+            let line = (0..nrows).map(|row| (row, col));
             scan_line(&mut results, grid, line.clone());
             scan_line(&mut results, grid, line.rev());
         }
@@ -52,9 +53,9 @@ impl From<Visibility> for Grid<bool> {
 
 impl std::fmt::Display for Visibility {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        for row in 0..self.grid.rows() {
-            for col in 0..self.grid.cols() {
-                write!(f, "{}", self.grid[row][col] as u8)?;
+        for row in self.grid.row_iter() {
+            for value in row.iter() {
+                write!(f, "{}", *value as u8)?;
             }
             writeln!(f)?;
         }

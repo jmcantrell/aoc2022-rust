@@ -6,7 +6,7 @@ use regex::Regex;
 
 use crate::core::shortest_paths_from;
 
-const START: &'static str = "AA";
+const START: &str = "AA";
 
 #[derive(Debug, Clone)]
 pub struct RoomGraph<'a> {
@@ -59,7 +59,7 @@ impl<'a> TryFrom<&'a str> for RoomGraph<'a> {
         ) -> anyhow::Result<(&'a str, usize, HashSet<&'a str>)> {
             let captures = re
                 .captures(s)
-                .with_context(|| format!("did not match regex: {:?}", re))?;
+                .with_context(|| format!("did not match regex: {re:?}"))?;
 
             let name = captures.get(1).context("missing name")?.as_str();
 
@@ -73,7 +73,7 @@ impl<'a> TryFrom<&'a str> for RoomGraph<'a> {
                 .get(3)
                 .context("missing tunnels")?
                 .as_str()
-                .split(",")
+                .split(',')
                 .map(|s| s.trim())
                 .collect::<HashSet<_>>();
 

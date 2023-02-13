@@ -105,7 +105,7 @@ impl Blueprint {
         let mut cache = HashMap::new();
         let mut best = 0;
 
-        recurse(&self, &mut cache, &mut best, State::new(minutes))
+        recurse(self, &mut cache, &mut best, State::new(minutes))
     }
 }
 
@@ -120,7 +120,7 @@ impl TryFrom<&str> for Blueprint {
 
             let captures = RE
                 .captures(s)
-                .with_context(|| format!("invalid resource cost: {:?}", s))?;
+                .with_context(|| format!("invalid resource cost: {s:?}"))?;
 
             let cost: ResourceCount = captures[1]
                 .parse()
@@ -138,7 +138,7 @@ impl TryFrom<&str> for Blueprint {
 
             let captures = RE
                 .captures(s)
-                .with_context(|| format!("invalid robot specification: {:?}", s))?;
+                .with_context(|| format!("invalid robot specification: {s:?}"))?;
 
             let resource: Resource = captures[1].try_into()?;
 
@@ -160,7 +160,7 @@ impl TryFrom<&str> for Blueprint {
 
         let captures = RE
             .captures(s)
-            .with_context(|| format!("invalid blueprint: {:?}", s))?;
+            .with_context(|| format!("invalid blueprint: {s:?}"))?;
 
         let id: Identifier = captures[1].parse()?;
 

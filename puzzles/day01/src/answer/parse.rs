@@ -10,8 +10,7 @@ pub type Parsed2 = Parsed;
 
 fn parse(input: &str) -> anyhow::Result<Parsed> {
     fn parse_int(s: &str) -> anyhow::Result<usize> {
-        s.parse()
-            .with_context(|| format!("invalid integer: {:?}", s))
+        s.parse().with_context(|| format!("invalid integer: {s:?}"))
     }
 
     fn parse_snack(s: &str) -> anyhow::Result<Snack> {

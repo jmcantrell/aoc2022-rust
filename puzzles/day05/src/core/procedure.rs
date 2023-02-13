@@ -1,23 +1,13 @@
-use anyhow::Context;
-
-use super::{Command, Crane, Stacks};
+use super::{Crane, Movement, Stacks};
 
 #[derive(Debug, Clone)]
-pub struct Procedure(pub Vec<Command>);
+pub struct Procedure(pub Vec<Movement>);
 
 impl Procedure {
     pub fn execute<C: Crane>(&self, stacks: &mut Stacks) -> anyhow::Result<()> {
-        self.0
-            .iter()
-            .enumerate()
-            .map(|(i, command)| -> anyhow::Result<()> {
-                command
-                    .execute::<C>(stacks)
-                    .with_context(|| format!("command number {}", i + 1))
-            })
-            .collect::<Result<Vec<_>, _>>()
-            .context("unable to execute procedure")?;
-
+        for movement in self.0.iter() {
+            movement.execute::<C>(stacks)?;
+        }
         Ok(())
     }
 }

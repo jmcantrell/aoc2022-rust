@@ -40,7 +40,7 @@ impl Ord for Packet {
                     list1.len().cmp(&list2.len())
                 }
             }
-            (Packet::Integer(value1), Packet::Integer(value2)) => value1.cmp(&value2),
+            (Packet::Integer(value1), Packet::Integer(value2)) => value1.cmp(value2),
             (Packet::Integer(_), Packet::List(_)) => Packet::List(vec![self.clone()]).cmp(other),
             (Packet::List(_), Packet::Integer(_)) => self.cmp(&Packet::List(vec![other.clone()])),
         }
@@ -51,13 +51,9 @@ impl TryFrom<&str> for Packet {
     type Error = anyhow::Error;
 
     fn try_from(s: &str) -> Result<Self, Self::Error> {
-        fn is_digit(c: char) -> bool {
-            c.is_digit(10)
-        }
-
         fn parse_int(s: &str) -> anyhow::Result<(Option<Packet>, &str)> {
-            if s.starts_with(|c: char| is_digit(c)) {
-                let i = s.find(|c: char| !is_digit(c)).unwrap_or(s.len());
+            if s.starts_with(|c: char| c.is_ascii_digit()) {
+                let i = s.find(|c: char| !c.is_ascii_digit()).unwrap_or(s.len());
                 let (prefix, rest) = s.split_at(i);
                 let value: usize = prefix.parse().unwrap();
                 Ok((Some(Packet::Integer(value)), rest))
@@ -94,7 +90,7 @@ impl TryFrom<&str> for Packet {
 
                 let s = s
                     .strip_prefix(']')
-                    .with_context(|| format!("missing list closing character before: {:?}", s))?;
+                    .with_context(|| format!("missing list closing character before: {s:?}"))?;
 
                 Ok((Some(Packet::List(packets)), s))
             } else {
@@ -114,19 +110,19 @@ impl TryFrom<&str> for Packet {
         }
 
         let (maybe_packet, rest) = parse_packet(s)?;
-        ensure!(rest.len() == 0, "leftover characters: {:?}", rest);
-        maybe_packet.with_context(|| format!("invalid packet: {:?}", s))
+        ensure!(rest.is_empty(), "leftover characters: {rest:?}");
+        maybe_packet.with_context(|| format!("invalid packet: {s:?}"))
     }
 }
 
 #[macro_export]
-macro_rules! pkt {
+macro_rules! packet {
     ($n:literal) => {
         $crate::core::Packet::Integer($n)
     };
     ([$($i:tt),*]) => {
         $crate::core::Packet::List(vec![
-            $($crate::pkt!($i)),*
+            $($crate::packet!($i)),*
         ])
     };
 }
@@ -135,26 +131,26 @@ macro_rules! pkt {
 mod tests {
     #[test]
     fn packet_int_ord() {
-        assert!(pkt!(0) < pkt!(1));
-        assert!(pkt!(1) == pkt!(1));
-        assert!(pkt!(1) > pkt!(0));
+        assert!(packet!(0) < packet!(1));
+        assert!(packet!(1) == packet!(1));
+        assert!(packet!(1) > packet!(0));
     }
 
     #[test]
     fn packet_list_ord() {
-        assert!(pkt!([]) == pkt!([]));
+        assert!(packet!([]) == packet!([]));
 
-        assert!(pkt!([]) < pkt!([0]));
-        assert!(pkt!([0]) > pkt!([]));
+        assert!(packet!([]) < packet!([0]));
+        assert!(packet!([0]) > packet!([]));
 
-        assert!(pkt!([0]) < pkt!([1]));
-        assert!(pkt!([1]) == pkt!([1]));
-        assert!(pkt!([1]) > pkt!([0]));
+        assert!(packet!([0]) < packet!([1]));
+        assert!(packet!([1]) == packet!([1]));
+        assert!(packet!([1]) > packet!([0]));
     }
 
     #[test]
     fn packet_int_list_ord() {
-        assert!(pkt!(0) == pkt!([0]));
-        assert!(pkt!([0]) == pkt!(0));
+        assert!(packet!(0) == packet!([0]));
+        assert!(packet!([0]) == packet!(0));
     }
 }

@@ -31,7 +31,7 @@ impl TryFrom<&str> for Test {
 
         let divisible_by = divisible_by
             .parse()
-            .with_context(|| format!("invalid condition: {:?}", divisible_by))?;
+            .with_context(|| format!("invalid condition: {divisible_by:?}"))?;
 
         let if_true = prefix(
             lines.next().context("missing true branch")?,
@@ -40,7 +40,7 @@ impl TryFrom<&str> for Test {
 
         let if_true = if_true
             .parse()
-            .with_context(|| format!("invalid true branch: {:?}", if_true))?;
+            .with_context(|| format!("invalid true branch: {if_true:?}"))?;
 
         let if_false = prefix(
             lines.next().context("missing false branch")?,
@@ -49,7 +49,7 @@ impl TryFrom<&str> for Test {
 
         let if_false = if_false
             .parse()
-            .with_context(|| format!("invalid false branch: {:?}", if_false))?;
+            .with_context(|| format!("invalid false branch: {if_false:?}"))?;
 
         Ok(Self {
             divisible_by,

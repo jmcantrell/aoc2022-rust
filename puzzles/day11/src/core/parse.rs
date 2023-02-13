@@ -12,6 +12,6 @@ pub fn binary<'a>(s: &'a str, sep: &'a str) -> anyhow::Result<(&'a str, &'a str)
 pub fn prefix<'a>(s: &'a str, prefix: &'a str) -> anyhow::Result<&'a str> {
     Ok(s.trim()
         .strip_prefix(prefix)
-        .with_context(|| format!("expected string to start with {:?}", prefix))?
+        .with_context(|| format!("expected string to start with {prefix:?}"))?
         .trim())
 }

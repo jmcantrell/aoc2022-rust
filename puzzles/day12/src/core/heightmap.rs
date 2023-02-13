@@ -3,20 +3,23 @@ use std::ops::RangeInclusive;
 
 use anyhow::{anyhow, ensure, Context};
 
-use geometry::{AxesBounds, Grid, GridLocation, Size};
-
-use crate::core::{BreadCrumbs, Path};
+use super::{BreadCrumbs, Grid, Location, Path};
 
 pub type Height = usize;
 
 #[derive(Debug, Clone)]
 pub struct HeightMap {
     grid: Grid<Height>,
-    pub start: GridLocation,
-    pub end: GridLocation,
+    pub start: Location,
+    pub end: Location,
 }
 
 impl HeightMap {
+    fn locations(&self) -> impl Iterator<Item = (usize, usize)> + '_ {
+        (0..self.grid.nrows())
+            .flat_map(move |row| (0..self.grid.ncols()).map(move |col| (row, col)))
+    }
+
     fn breadcrumbs(&self) -> BreadCrumbs {
         BreadCrumbs::from_grid(&self.grid, self.end, |a, b| a < b || a.abs_diff(*b) <= 1)
     }
@@ -28,9 +31,8 @@ impl HeightMap {
     pub fn find_alternate_paths(&self) -> impl Iterator<Item = Path> + '_ {
         let breadcrumbs = self.breadcrumbs();
 
-        self.grid
-            .row_major_locations()
-            .filter(|location| *self.grid.get(location).unwrap() == 0)
+        self.locations()
+            .filter(|loc| self.grid[*loc] == 0)
             .filter_map(move |start| breadcrumbs.path(start))
     }
 }
@@ -73,7 +75,7 @@ impl TryFrom<&str> for HeightMap {
                 let mut c = c;
 
                 if c == START || c == END {
-                    let location = GridLocation::new(j, i);
+                    let location = (i, j);
                     if c == START {
                         start = location;
                         c = *HEIGHT_RANGE.start();
@@ -84,14 +86,15 @@ impl TryFrom<&str> for HeightMap {
                 }
 
                 let height = parse_height(c)
-                    .with_context(|| format!("line number {}, row number {}", i + 1, j + 1))?;
+                    .with_context(|| format!("line number {}, column number {}", i + 1, j + 1))?;
 
                 values.push(height);
             }
         }
 
-        let size = Size::new(width, values.len() / width);
-        let grid = Grid::try_from((size, values))?;
+        let height = values.len() / width;
+
+        let grid = Grid::from_row_iterator(height, width, values.into_iter());
 
         Ok(Self { grid, start, end })
     }

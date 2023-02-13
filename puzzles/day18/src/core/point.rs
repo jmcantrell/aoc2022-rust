@@ -46,7 +46,7 @@ impl TryFrom<&str> for Point {
     fn try_from(s: &str) -> Result<Self, Self::Error> {
         fn parse_int(s: &str) -> anyhow::Result<isize> {
             s.parse()
-                .with_context(|| format!("invalid integer: {:?}", s))
+                .with_context(|| format!("invalid integer: {s:?}"))
         }
 
         let mut components = s

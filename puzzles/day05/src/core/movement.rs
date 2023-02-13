@@ -3,24 +3,20 @@ use anyhow::{anyhow, ensure, Context};
 use super::{Crane, Stacks};
 
 #[derive(Debug, Clone)]
-pub enum Command {
-    Move {
-        count: usize,
-        from: usize,
-        to: usize,
-    },
+pub struct Movement {
+    count: usize,
+    from: usize,
+    to: usize,
 }
 
-impl Command {
+impl Movement {
     pub fn execute<C: Crane>(&self, stacks: &mut Stacks) -> anyhow::Result<()> {
-        match self {
-            Command::Move { count, from, to } => C::move_crates(stacks, *count, *from - 1, *to - 1),
-        }
-        .with_context(|| format!("unable to execute command: {:?}", self))
+        C::move_crates(stacks, self.count, self.from - 1, self.to - 1)
+            .with_context(|| format!("unable to execute command: {self:?}"))
     }
 }
 
-impl TryFrom<&str> for Command {
+impl TryFrom<&str> for Movement {
     type Error = anyhow::Error;
 
     fn try_from(s: &str) -> Result<Self, Self::Error> {
@@ -48,7 +44,7 @@ impl TryFrom<&str> for Command {
                     .context("missing argument for 'to' subcommand")?
                     .parse()?;
 
-                Ok(Command::Move { count, from, to })
+                Ok(Movement { count, from, to })
             }
             _ => Err(anyhow!("unknown command: {:?}", command)),
         }

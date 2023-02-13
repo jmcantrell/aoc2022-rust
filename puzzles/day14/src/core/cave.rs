@@ -123,7 +123,7 @@ impl fmt::Display for CaveMap {
             for x in top_left.x..=bottom_right.x {
                 let mut s = AIR;
 
-                if let Some(unit) = self.grid.get(&Location { y, x }) {
+                if let Some(unit) = self.grid.get(&Location::new(x, y)) {
                     s = match unit {
                         Unit::Rock => ROCK,
                         Unit::Sand => SAND,
@@ -181,7 +181,7 @@ impl TryFrom<&str> for CaveMap {
 
             while !path.is_empty() {
                 let next = path.pop().unwrap();
-                let unit = (next - prev).signum();
+                let unit = (next - prev).map(|c| c.signum());
                 let mut current = prev;
                 while current != next {
                     stroke.push(current);

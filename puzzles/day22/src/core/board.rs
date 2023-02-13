@@ -1,6 +1,8 @@
 use std::collections::HashMap;
 
-use super::{Direction, Location, Map, Tile, Walk, Walker};
+use super::{CardinalDirection, Location, Map, Tile, Walk, Walker};
+
+use CardinalDirection::*;
 
 type Portals = HashMap<Location, Location>;
 
@@ -11,57 +13,58 @@ pub struct Board {
     horizontal_portals: Portals,
 }
 
-impl Board {
-    fn portal(&self, location: &Location, direction: &Direction) -> Location {
-        *match direction {
-            Direction::East | Direction::West => self.horizontal_portals.get(location),
-            Direction::North | Direction::South => self.vertical_portals.get(location),
-        }
-        .unwrap()
-    }
-}
-
 impl<'a> Walk<'a> for Board {
     fn walker(&self) -> Walker {
         self.map.walker()
     }
 
-    fn neighbor(&self, location: Location, direction: Direction) -> (Location, Direction, Tile) {
-        match self.map.grid.neighbor_some(&location, &direction) {
-            Some(adjacent) => (
-                adjacent,
-                direction,
-                *self.map.grid.get_some(&adjacent).unwrap(),
-            ),
-            None => {
-                let adjacent = self.portal(&location, &direction);
-                (
-                    adjacent,
-                    direction,
-                    *self.map.grid.get_some(&adjacent).unwrap(),
-                )
-            }
-        }
+    fn portal(&self, loc: Location, dir: CardinalDirection) -> (Location, CardinalDirection, Tile) {
+        let portals = match dir {
+            North | South => &self.vertical_portals,
+            West | East => &self.horizontal_portals,
+        };
+        let &loc = portals.get(&loc).unwrap();
+        (loc, dir, self.map.grid[loc].unwrap())
     }
 }
 
 impl From<Map> for Board {
     fn from(map: Map) -> Self {
-        fn insert_extents(mut map: Portals, (first, last): (Location, Location)) -> Portals {
-            map.insert(first, last);
-            map.insert(last, first);
-            map
+        let (nrows, ncols) = map.grid.shape();
+
+        let mut horizontal_portals = HashMap::new();
+
+        for row in 0..nrows {
+            if let Some(first_col) = (0..ncols).find(|&col| map.grid[(row, col)].is_some()) {
+                let last_col = (0..ncols)
+                    .rev()
+                    .find(|&col| map.grid[(row, col)].is_some())
+                    .unwrap_or(first_col);
+
+                let first = (row, first_col);
+                let last = (row, last_col);
+
+                horizontal_portals.insert(first, last);
+                horizontal_portals.insert(last, first);
+            }
         }
 
-        let vertical_portals = map
-            .grid
-            .vertical_bounds_by_column()
-            .fold(HashMap::new(), insert_extents);
+        let mut vertical_portals = HashMap::new();
 
-        let horizontal_portals = map
-            .grid
-            .horizontal_bounds_by_row()
-            .fold(HashMap::new(), insert_extents);
+        for col in 0..ncols {
+            if let Some(first_row) = (0..nrows).find(|&row| map.grid[(row, col)].is_some()) {
+                let last_row = (0..nrows)
+                    .rev()
+                    .find(|&row| map.grid[(row, col)].is_some())
+                    .unwrap_or(first_row);
+
+                let first = (first_row, col);
+                let last = (last_row, col);
+
+                vertical_portals.insert(first, last);
+                vertical_portals.insert(last, first);
+            }
+        }
 
         Self {
             map,

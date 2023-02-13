@@ -2,9 +2,7 @@ use std::collections::HashSet;
 
 use anyhow::ensure;
 
-use geometry::AxesBounds;
-
-use crate::core::{coalesce_ranges, Extents, Point, TaxicabCircle};
+use crate::core::{coalesce_ranges, Point, TaxicabCircle};
 
 use super::{Parsed1, Parsed2};
 
@@ -26,27 +24,32 @@ mod consts {
 use consts::*;
 
 pub fn solve1(grid: &Parsed1) -> anyhow::Result<Solution1> {
-    let mut rect = grid.extents();
+    let (mut top_left, mut bottom_right) = grid.extents();
 
-    rect.top_left.y = ROW;
-    rect.bottom_right.y = ROW;
+    top_left.y = ROW;
+    bottom_right.y = ROW;
 
     let beacons: HashSet<_> = grid.beacons().collect();
     let circles: Vec<_> = grid.taxicab_circles().collect();
 
-    let no_beacons = rect.row_major_locations().filter(move |point| {
-        !beacons.contains(&point) && circles.iter().any(|c| c.contains(point))
-    });
-
-    Ok(no_beacons.count())
+    Ok((top_left.y..=bottom_right.y)
+        .flat_map(|y| {
+            (top_left.x..=bottom_right.x)
+                .map(move |x| Point::new(x, y))
+                .filter(|point| {
+                    !beacons.contains(&point) && circles.iter().any(|c| c.contains(point))
+                })
+        })
+        .count())
 }
 
 pub fn solve2(grid: &Parsed2) -> anyhow::Result<Solution2> {
-    let rect = Extents::new(Point::default(), Point::new(MAX_COMPONENT, MAX_COMPONENT));
+    let top_left = Point::default();
+    let bottom_right = Point::new(MAX_COMPONENT, MAX_COMPONENT);
 
     let circles: Vec<TaxicabCircle> = grid.taxicab_circles().collect();
 
-    let mut possible_beacons: Vec<_> = (rect.top()..=rect.bottom())
+    let mut possible_beacons: Vec<_> = (top_left.y..=bottom_right.y)
         .filter_map(|y| {
             let x_ranges = coalesce_ranges(circles.iter().filter_map(|c| c.x_range(y)).collect());
             if x_ranges.len() > 1 {
@@ -74,7 +77,7 @@ pub fn solve2(grid: &Parsed2) -> anyhow::Result<Solution2> {
 
     let x = *x_range1.end() + 1;
 
-    let distress_beacon = Point { x, y };
+    let distress_beacon = Point::new(x, y);
 
     Ok(distress_beacon.x * 4_000_000 + distress_beacon.y)
 }

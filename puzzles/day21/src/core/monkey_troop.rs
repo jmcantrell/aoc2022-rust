@@ -31,7 +31,7 @@ impl<'a> MonkeyTroop<'a> {
     }
 
     pub fn eval_variable(&'a self) -> Value {
-        fn recurse<'a>(graph: &HashMap<Name, Job>, name: Name<'a>) -> Expression {
+        fn recurse(graph: &HashMap<Name, Job>, name: Name) -> Expression {
             if name == "humn" {
                 Expression::Function(Box::from(|value| value))
             } else {
@@ -116,6 +116,5 @@ impl<'a> TryFrom<&'a str> for MonkeyTroop<'a> {
             .enumerate()
             .map(|(i, s)| parse_name_and_job(s).with_context(|| format!("line number {}", i + 1)))
             .collect::<Result<_, _>>()
-            .into()
     }
 }

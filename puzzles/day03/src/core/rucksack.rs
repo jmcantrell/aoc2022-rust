@@ -41,7 +41,7 @@ pub fn find_common_by_pocket(rucksacks: &[Rucksack]) -> anyhow::Result<Vec<Prior
         .enumerate()
         .map(|(i, rucksack)| {
             let (pocket1, pocket2) = rucksack.split_at(rucksack.len() / 2);
-            find_common_in_groups(&vec![pocket1.to_vec(), pocket2.to_vec()])
+            find_common_in_groups(&[pocket1.to_vec(), pocket2.to_vec()])
                 .with_context(|| format!("rucksack number {}", i + 1))
         })
         .collect()

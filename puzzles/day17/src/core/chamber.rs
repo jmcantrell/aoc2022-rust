@@ -6,6 +6,8 @@ use std::vec::IntoIter;
 
 use crate::core::{JetPush, Rock};
 
+use Rock::*;
+
 type Row = u8;
 type Chunk = u32;
 type Block = u64;
@@ -31,13 +33,7 @@ const CHUNK_LEFT_MASK: Chunk = Chunk::from_be_bytes([ROW_LEFT_MASK; CHUNK_ROW_LE
 const ROW_RIGHT_MASK: Row = 0b00000001;
 const CHUNK_RIGHT_MASK: Chunk = Chunk::from_be_bytes([ROW_RIGHT_MASK; CHUNK_ROW_LEN]);
 
-const ROCK_PATTERN: [Rock; 5] = [
-    Rock::Slab,
-    Rock::Plus,
-    Rock::Ell,
-    Rock::Column,
-    Rock::Square,
-];
+const ROCK_PATTERN: [Rock; 5] = [Slab, Plus, Ell, Column, Square];
 
 impl Add<JetPush> for Chunk {
     type Output = Self;
@@ -76,8 +72,8 @@ impl Chamber {
             .map(|rock| Chunk::from_le_bytes(rock.bytes()) >> rock_offset)
             .collect();
 
-        assert!(jet_pattern.len() > 0, "jet pattern empty");
-        assert!(rock_pattern.len() > 0, "rock pattern empty");
+        assert!(!jet_pattern.is_empty(), "jet pattern empty");
+        assert!(!rock_pattern.is_empty(), "rock pattern empty");
 
         Self {
             rock_pile: vec![BEDROCK],
@@ -137,7 +133,6 @@ impl Chamber {
         let mut rock_bottom = self.rock_pile.len() + CLEARANCE_ROWS;
 
         self.falling_rock = Some((rock, rock_bottom));
-        // println!("new rock:\n{self}");
 
         let jet_push_index = loop {
             let (jet_push_index, jet_push) = self.jet_pushes.next().unwrap();
@@ -151,12 +146,10 @@ impl Chamber {
             }
 
             self.falling_rock = Some((rock, rock_bottom));
-            // println!("pushed {:?}:\n{self}", jet_push);
 
             if rock & self.chunk(rock_bottom - 1) == 0 {
                 rock_bottom -= 1;
                 self.falling_rock = Some((rock, rock_bottom));
-                // println!("dropped:\n{self}");
             } else {
                 break jet_push_index;
             }
@@ -164,7 +157,6 @@ impl Chamber {
 
         self.falling_rock = None;
         self.add_rock(rock_bottom, rock);
-        // println!("rock settled:\n{self}");
 
         SampleKey {
             block: self.top_block(),
@@ -189,7 +181,7 @@ impl fmt::Display for Chamber {
                     rock.to_be_bytes()
                         .into_iter()
                         .enumerate()
-                        .map(|(i, layer)| {
+                        .flat_map(|(i, layer)| {
                             bits(layer).enumerate().filter_map(move |(column, set)| {
                                 if set {
                                     Some((rock_height + i, column))
@@ -198,7 +190,6 @@ impl fmt::Display for Chamber {
                                 }
                             })
                         })
-                        .flatten()
                         .collect()
                 });
 
@@ -222,7 +213,7 @@ impl fmt::Display for Chamber {
                     '.'
                 };
 
-                write!(f, "{}", c)?;
+                write!(f, "{c}")?;
             }
             writeln!(f)?;
         }

@@ -1,5 +1,7 @@
 use super::{Parsed1, Parsed2};
 
+use crate::packet;
+
 pub type Solution = usize;
 pub type Solution1 = Solution;
 pub type Solution2 = Solution;
@@ -19,8 +21,8 @@ pub fn solve1(packet_pairs: &Parsed1) -> anyhow::Result<Solution1> {
 }
 
 pub fn solve2(packet_pairs: &Parsed2) -> anyhow::Result<Solution2> {
-    let divider1 = crate::pkt!([[2]]);
-    let divider2 = crate::pkt!([[6]]);
+    let divider1 = packet!([[2]]);
+    let divider2 = packet!([[6]]);
 
     let mut packets = vec![&divider1, &divider2];
 

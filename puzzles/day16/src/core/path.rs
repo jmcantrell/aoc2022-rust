@@ -9,9 +9,9 @@ where
     T: Hash + Eq + ?Sized,
 {
     let mut frontier = VecDeque::new();
-    let mut came_from = HashMap::new();
-
     frontier.push_back(start);
+
+    let mut came_from = HashMap::new();
 
     while let Some(current) = frontier.pop_front() {
         for &neighbor in &neighbors[current] {

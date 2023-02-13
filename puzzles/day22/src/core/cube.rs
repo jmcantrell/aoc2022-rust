@@ -2,9 +2,10 @@ use std::collections::HashMap;
 
 use lazy_static::lazy_static;
 
-use geometry::{AxesBounds, RowIter};
+use super::{CardinalDirection, CubeNet, Location, Map, Tile, Walk, Walker};
 
-use super::{CubeNet, Direction, Face, Location, Map, Tile, Walk, Walker};
+use CardinalDirection::*;
+use IndexTransform::*;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum IndexTransform {
@@ -17,23 +18,20 @@ enum IndexTransform {
 }
 
 impl IndexTransform {
-    pub fn eval(&self, location: &Location, size: usize) -> usize {
+    pub fn eval(&self, (row, col): Location, size: usize) -> usize {
         match self {
-            Row => location.y,
-            Column => location.x,
+            Row => row,
+            Column => col,
             First => 0,
             Last => size - 1,
-            InverseRow => size - location.y - 1,
-            InverseColumn => size - location.x - 1,
+            InverseRow => size - row - 1,
+            InverseColumn => size - col - 1,
         }
     }
 }
 
-use IndexTransform::*;
-use geometry::CardinalDirection::*;
-
 lazy_static! {
-    static ref EDGE_TRANSITIONS: HashMap<(Direction, Direction), (IndexTransform, IndexTransform)> =
+    static ref EDGE_TRANSITIONS: HashMap<(CardinalDirection, CardinalDirection), (IndexTransform, IndexTransform)> =
         [
             ((East, East), (InverseRow, Last)),
             ((East, North), (First, InverseRow)),
@@ -56,7 +54,7 @@ lazy_static! {
         .collect();
 }
 
-type Portals = HashMap<(Location, Direction), (Location, Direction)>;
+type Portals = HashMap<(Location, CardinalDirection), (Location, CardinalDirection)>;
 
 #[derive(Debug, Clone)]
 pub struct Cube {
@@ -64,48 +62,15 @@ pub struct Cube {
     portals: Portals,
 }
 
-impl Cube {}
-
 impl Walk<'_> for Cube {
     fn walker(&self) -> Walker {
         self.map.walker()
     }
 
-    fn neighbor(&self, location: Location, direction: Direction) -> (Location, Direction, Tile) {
-        match self.map.grid.neighbor_some(&location, &direction) {
-            Some(adjacent) => (
-                adjacent,
-                direction,
-                *self.map.grid.get_some(&adjacent).unwrap(),
-            ),
-            None => {
-                let &(adjacent, direction) = self.portals.get(&(location, direction)).unwrap();
-                (
-                    adjacent,
-                    direction,
-                    *self.map.grid.get_some(&adjacent).unwrap(),
-                )
-            }
-        }
+    fn portal(&self, loc: Location, dir: CardinalDirection) -> (Location, CardinalDirection, Tile) {
+        let &(loc, dir) = self.portals.get(&(loc, dir)).unwrap();
+        (loc, dir, self.map.grid[loc].unwrap())
     }
-}
-
-fn edge_locations(face: &Face, edge: &Direction) -> RowIter<usize> {
-    let bounds = face.bounds();
-
-    let top = bounds.top();
-    let bottom = bounds.bottom();
-    let left = bounds.left();
-    let right = bounds.right();
-
-    let (yr, xr) = match edge {
-        North => (top..(top + 1), left..(right + 1)),
-        South => (bottom..(bottom + 1), left..(right + 1)),
-        West => (top..(bottom + 1), left..(left + 1)),
-        East => (top..(bottom + 1), right..(right + 1)),
-    };
-
-    RowIter::new(yr, xr)
 }
 
 impl TryFrom<Map> for Cube {
@@ -118,23 +83,33 @@ impl TryFrom<Map> for Cube {
 
         let directions = [North, South, West, East];
 
-        for (from, adjacency) in net.edges.iter() {
-            let face = net.faces.get_some(from).unwrap();
+        for (&from, adjacency) in net.edges.iter() {
+            let face = net.faces[from].as_ref().unwrap();
+
+            let (nrows, ncols) = face.shape();
+
             for edge in directions {
                 let &(other_edge, to) = adjacency.get(&edge).unwrap();
-                let other_face = net.faces.get_some(&to).unwrap();
+                let other_face = net.faces[to].as_ref().unwrap();
 
                 let (row_transform, column_transform) =
                     EDGE_TRANSITIONS.get(&(edge, other_edge)).unwrap();
 
-                for edge_location in edge_locations(face, &edge) {
-                    let other_edge_location = Location::new(
-                        column_transform.eval(&edge_location, net.size),
-                        row_transform.eval(&edge_location, net.size),
+                let (rr, cr) = match edge {
+                    North => (0..1, 0..ncols),
+                    South => ((nrows - 1)..nrows, 0..ncols),
+                    West => (0..nrows, 0..1),
+                    East => (0..nrows, (ncols - 1)..ncols),
+                };
+
+                for edge_location in rr.flat_map(|row| cr.clone().map(move |col| (row, col))) {
+                    let other_edge_location = (
+                        row_transform.eval(edge_location, net.size),
+                        column_transform.eval(edge_location, net.size),
                     );
 
-                    let a = face[&edge_location];
-                    let b = other_face[&other_edge_location];
+                    let a = face[edge_location];
+                    let b = other_face[other_edge_location];
 
                     portals.insert((a, edge), (b, other_edge.inverse()));
                 }

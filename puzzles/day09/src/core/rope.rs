@@ -1,12 +1,8 @@
 use std::collections::HashSet;
 
-use geometry::{Location, RelativeDirection};
+use super::{Direction, Movement, Point};
 
-use super::Movement;
-
-use RelativeDirection::*;
-
-type Point = Location<isize>;
+use Direction::*;
 
 #[derive(Debug)]
 pub struct Rope {
@@ -14,7 +10,7 @@ pub struct Rope {
     pub trail: HashSet<Point>,
 }
 
-fn rotate(point: Point, direction: &RelativeDirection) -> Point {
+fn rotate(point: Point, direction: &Direction) -> Point {
     let (x, y) = match direction {
         Up => (0, 1),
         Down => (0, -1),
@@ -30,7 +26,7 @@ fn adjust_tail(head: Point, mut tail: Point) -> Point {
     let dist = diff.abs();
 
     if dist.x > 1 || dist.y > 1 {
-        tail += (head - tail).signum();
+        tail += (head - tail).map(|c| c.signum());
     }
 
     tail
@@ -49,7 +45,7 @@ impl Rope {
         Self { knots, trail }
     }
 
-    pub fn drag_step(&mut self, direction: &RelativeDirection) {
+    pub fn drag_step(&mut self, direction: &Direction) {
         if self.knots.is_empty() {
             return;
         }
@@ -74,25 +70,12 @@ impl Rope {
 
 #[cfg(test)]
 mod tests {
-    use anyhow::anyhow;
-
     use super::*;
-
-    fn parse_direction(c: char) -> anyhow::Result<RelativeDirection> {
-        use RelativeDirection::*;
-        match c {
-            'U' => Ok(Up),
-            'D' => Ok(Down),
-            'L' => Ok(Left),
-            'R' => Ok(Right),
-            _ => Err(anyhow!("invalid direction: {:?}", c)),
-        }
-    }
 
     fn assert_tail_after(expected_tail: Point, path: &str) {
         let directions = path
             .chars()
-            .map(parse_direction)
+            .map(Direction::try_from)
             .collect::<Result<Vec<_>, _>>()
             .unwrap();
 
@@ -117,7 +100,7 @@ mod tests {
     #[test]
     fn no_tail_move() {
         assert_tail!(
-            (0, 0),
+            [0, 0],
             "U",
             "UL",
             "UR",
@@ -135,21 +118,21 @@ mod tests {
 
     #[test]
     fn vertical_tail_move() {
-        assert_tail!((0, 1), "UU");
-        assert_tail!((0, -1), "DD");
+        assert_tail!([0, 1], "UU");
+        assert_tail!([0, -1], "DD");
     }
 
     #[test]
     fn horizontal_tail_move() {
-        assert_tail!((-1, 0), "LL");
-        assert_tail!((1, 0), "RR");
+        assert_tail!([-1, 0], "LL");
+        assert_tail!([1, 0], "RR");
     }
 
     #[test]
     fn diagonal_tail_move() {
-        assert_tail!((-1, -1), "DLD", "LDL", "LDD", "DLL");
-        assert_tail!((1, -1), "DRD", "RDR", "RDD", "DRR");
-        assert_tail!((-1, 1), "ULU", "LUL", "LUU", "ULL");
-        assert_tail!((1, 1), "URU", "RUR", "RUU", "URR")
+        assert_tail!([-1, -1], "DLD", "LDL", "LDD", "DLL");
+        assert_tail!([1, -1], "DRD", "RDR", "RDD", "DRR");
+        assert_tail!([-1, 1], "ULU", "LUL", "LUU", "ULL");
+        assert_tail!([1, 1], "URU", "RUR", "RUU", "URR")
     }
 }

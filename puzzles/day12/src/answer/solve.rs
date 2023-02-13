@@ -11,11 +11,10 @@ pub fn solve1(map: &Parsed1) -> anyhow::Result<Solution1> {
 }
 
 pub fn solve2(map: &Parsed2) -> anyhow::Result<Solution2> {
-    Ok(map
-        .find_alternate_paths()
+    map.find_alternate_paths()
         .map(|path| path.len())
         .min()
-        .context("no paths found")?)
+        .context("no paths found")
 }
 
 #[cfg(test)]

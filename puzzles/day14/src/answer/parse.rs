@@ -9,9 +9,7 @@ pub type Parsed1 = Parsed;
 pub type Parsed2 = Parsed;
 
 fn parse(input: Input) -> anyhow::Result<Parsed> {
-    input
-        .try_into()
-        .with_context(|| format!("unable to parse cave map"))
+    input.try_into().context("unable to parse cave map")
 }
 
 pub fn parse1(input: Input) -> anyhow::Result<Parsed1> {

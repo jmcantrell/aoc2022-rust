@@ -1,11 +1,13 @@
 use anyhow::anyhow;
 
-use geometry::Rotation;
+use super::RelativeDirection;
+
+use Movement::*;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Movement {
     Forward(usize),
-    Rotate(Rotation),
+    Rotate(RelativeDirection),
 }
 
 impl TryFrom<&str> for Movement {
@@ -13,11 +15,11 @@ impl TryFrom<&str> for Movement {
 
     fn try_from(s: &str) -> Result<Self, Self::Error> {
         if let Ok(value) = s.parse::<usize>() {
-            Ok(Self::Forward(value))
+            Ok(Forward(value))
         } else {
             match s {
-                "L" => Ok(Self::Rotate(Rotation::Left)),
-                "R" => Ok(Self::Rotate(Rotation::Right)),
+                "L" => Ok(Rotate(RelativeDirection::Left)),
+                "R" => Ok(Rotate(RelativeDirection::Right)),
                 _ => Err(anyhow!("invalid movement: {:?}", s)),
             }
         }

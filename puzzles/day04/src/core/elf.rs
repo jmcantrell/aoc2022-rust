@@ -22,8 +22,7 @@ impl TryFrom<&str> for Assignment {
 
     fn try_from(s: &str) -> Result<Self, Self::Error> {
         fn parse_int(s: &str) -> anyhow::Result<usize> {
-            s.parse()
-                .with_context(|| format!("invalid integer: {:?}", s))
+            s.parse().with_context(|| format!("invalid integer: {s:?}"))
         }
 
         let mut split = s.splitn(2, '-');
@@ -55,7 +54,7 @@ impl TryFrom<&str> for AssignmentPair {
         let mut items = s.splitn(2, ',');
 
         fn parse_assignment(s: &str) -> anyhow::Result<Assignment> {
-            Assignment::try_from(s).with_context(|| format!("invalid assignment: {:?}", s))
+            Assignment::try_from(s).with_context(|| format!("invalid assignment: {s:?}"))
         }
 
         let a = parse_assignment(items.next().context("missing first assignment")?)?;

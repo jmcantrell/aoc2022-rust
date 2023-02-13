@@ -28,7 +28,7 @@ pub fn solve2(graph: &Parsed2) -> anyhow::Result<Solution2> {
         seconds,
         |_, remaining_valves, released_by_me| {
             graph.traverse_possible_paths(
-                &remaining_valves,
+                remaining_valves,
                 seconds,
                 |_, _, released_by_elephant| {
                     max_released = max_released.max(released_by_me + released_by_elephant);

@@ -4,16 +4,13 @@ use std::ops::{Add, AddAssign, Index, IndexMut, Mul, Sub, SubAssign};
 
 use anyhow::anyhow;
 
+use Resource::*;
+
 pub const NUM_RESOURCES: usize = 4;
 
 pub type ResourceContainer<T> = [T; NUM_RESOURCES];
 
-pub const RESOURCES: ResourceContainer<Resource> = [
-    Resource::Ore,
-    Resource::Clay,
-    Resource::Obsidian,
-    Resource::Geode,
-];
+pub const RESOURCES: ResourceContainer<Resource> = [Ore, Clay, Obsidian, Geode];
 
 #[repr(u8)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -30,10 +27,10 @@ impl fmt::Display for Resource {
             f,
             "{}",
             match self {
-                Self::Ore => "ore",
-                Self::Clay => "clay",
-                Self::Obsidian => "obsidian",
-                Self::Geode => "geode",
+                Ore => "ore",
+                Clay => "clay",
+                Obsidian => "obsidian",
+                Geode => "geode",
             }
         )?;
 
@@ -46,10 +43,10 @@ impl TryFrom<&str> for Resource {
 
     fn try_from(s: &str) -> Result<Self, Self::Error> {
         match s {
-            "ore" => Ok(Self::Ore),
-            "clay" => Ok(Self::Clay),
-            "obsidian" => Ok(Self::Obsidian),
-            "geode" => Ok(Self::Geode),
+            "ore" => Ok(Ore),
+            "clay" => Ok(Clay),
+            "obsidian" => Ok(Obsidian),
+            "geode" => Ok(Geode),
             _ => Err(anyhow!("invalid resource: {:?}", s)),
         }
     }
@@ -68,35 +65,35 @@ impl<T> ResourceMap<T> {
     }
 
     pub fn ore(&self) -> &T {
-        self.index(&Resource::Ore)
+        self.index(&Ore)
     }
 
     pub fn ore_mut(&mut self) -> &mut T {
-        self.index_mut(&Resource::Ore)
+        self.index_mut(&Ore)
     }
 
     pub fn clay(&self) -> &T {
-        self.index(&Resource::Clay)
+        self.index(&Clay)
     }
 
     pub fn clay_mut(&mut self) -> &mut T {
-        self.index_mut(&Resource::Clay)
+        self.index_mut(&Clay)
     }
 
     pub fn obsidian(&self) -> &T {
-        self.index(&Resource::Obsidian)
+        self.index(&Obsidian)
     }
 
     pub fn obsidian_mut(&mut self) -> &mut T {
-        self.index_mut(&Resource::Obsidian)
+        self.index_mut(&Obsidian)
     }
 
     pub fn geode(&self) -> &T {
-        self.index(&Resource::Geode)
+        self.index(&Geode)
     }
 
     pub fn geode_mut(&mut self) -> &mut T {
-        self.index_mut(&Resource::Geode)
+        self.index_mut(&Geode)
     }
 }
 
@@ -126,9 +123,9 @@ impl<T> From<ResourceContainer<T>> for ResourceMap<T> {
     }
 }
 
-impl<T> Into<ResourceContainer<T>> for ResourceMap<T> {
-    fn into(self) -> ResourceContainer<T> {
-        self.0
+impl<T> From<ResourceMap<T>> for ResourceContainer<T> {
+    fn from(map: ResourceMap<T>) -> Self {
+        map.0
     }
 }
 
