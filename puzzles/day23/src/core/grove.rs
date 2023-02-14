@@ -190,12 +190,4 @@ mod tests {
             SMALL_EXAMPLE
         );
     }
-
-    #[test]
-    fn it_works() {
-        let mut grove = Grove::try_from(SMALL_EXAMPLE).unwrap();
-        println!("{grove}");
-        grove.iterate();
-        println!("{grove}");
-    }
 }
