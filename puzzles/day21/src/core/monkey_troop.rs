@@ -2,16 +2,16 @@ use std::collections::HashMap;
 
 use anyhow::Context;
 
-use crate::core::{Expression, Job, Name, Operation, Value};
+use crate::core::{Expression, Job, Operation, Value};
 
 #[derive(Debug, Clone)]
 pub struct MonkeyTroop<'a> {
-    graph: HashMap<Name<'a>, Job<'a>>,
+    graph: HashMap<&'a str, Job<'a>>,
 }
 
 impl<'a> MonkeyTroop<'a> {
     pub fn eval(&'a self) -> Value {
-        fn recurse(graph: &HashMap<Name, Job>, name: &str) -> Value {
+        fn recurse(graph: &HashMap<&str, Job>, name: &str) -> Value {
             match graph[name] {
                 Job::Value(value) => value,
                 Job::Operation(operation, name1, name2) => {
@@ -31,7 +31,7 @@ impl<'a> MonkeyTroop<'a> {
     }
 
     pub fn eval_variable(&'a self) -> Value {
-        fn recurse(graph: &HashMap<Name, Job>, name: Name) -> Expression {
+        fn recurse(graph: &HashMap<&str, Job>, name: &str) -> Expression {
             if name == "humn" {
                 Expression::Function(Box::from(|value| value))
             } else {
@@ -93,8 +93,8 @@ impl<'a> MonkeyTroop<'a> {
     }
 }
 
-impl<'a> FromIterator<(Name<'a>, Job<'a>)> for MonkeyTroop<'a> {
-    fn from_iter<I: IntoIterator<Item = (Name<'a>, Job<'a>)>>(iter: I) -> Self {
+impl<'a> FromIterator<(&'a str, Job<'a>)> for MonkeyTroop<'a> {
+    fn from_iter<I: IntoIterator<Item = (&'a str, Job<'a>)>>(iter: I) -> Self {
         Self {
             graph: iter.into_iter().collect(),
         }
@@ -105,7 +105,7 @@ impl<'a> TryFrom<&'a str> for MonkeyTroop<'a> {
     type Error = anyhow::Error;
 
     fn try_from(s: &'a str) -> Result<Self, Self::Error> {
-        fn parse_name_and_job(s: &str) -> anyhow::Result<(Name, Job)> {
+        fn parse_name_and_job(s: &str) -> anyhow::Result<(&str, Job)> {
             let mut split = s.splitn(2, ": ");
             let name = split.next().context("missing name")?;
             let job: Job = split.next().context("missing job")?.try_into()?;

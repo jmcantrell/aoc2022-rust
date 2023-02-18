@@ -2,7 +2,7 @@ use criterion::{black_box, criterion_group, criterion_main, BatchSize, Criterion
 
 use aoc::{Input, Parse, Solve};
 
-use day01::aoc::{Parser1, Parser2, Solver1, Solver2};
+use day01::aoc::{Parser, Solver1, Solver2};
 
 const INPUT: Input = include_str!("../input.txt");
 
@@ -23,11 +23,11 @@ fn benchmark<P: Parse, S: Solve<P> + Clone>(c: &mut Criterion, name: &str) {
 }
 
 fn part1(c: &mut Criterion) {
-    benchmark::<Parser1, Solver1>(c, "part 1");
+    benchmark::<Parser, Solver1>(c, "part 1");
 }
 
 fn part2(c: &mut Criterion) {
-    benchmark::<Parser2, Solver2>(c, "part 2");
+    benchmark::<Parser, Solver2>(c, "part 2");
 }
 
 criterion_group!(benches, part1, part2);

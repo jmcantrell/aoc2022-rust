@@ -1,3 +1,5 @@
+pub mod parse;
+
 pub mod monkey;
 pub use monkey::*;
 
@@ -6,9 +8,6 @@ pub use operator::*;
 
 pub mod operation;
 pub use operation::*;
-
-pub mod parse;
-pub use parse::*;
 
 pub mod value;
 pub use value::*;

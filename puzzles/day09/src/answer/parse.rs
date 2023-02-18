@@ -5,10 +5,8 @@ use aoc::Input;
 use crate::core::Movement;
 
 pub type Parsed = Vec<Movement>;
-pub type Parsed1 = Parsed;
-pub type Parsed2 = Parsed;
 
-fn parse(input: Input) -> anyhow::Result<Parsed> {
+pub fn parse(input: Input) -> anyhow::Result<Parsed> {
     input
         .lines()
         .enumerate()
@@ -17,14 +15,6 @@ fn parse(input: Input) -> anyhow::Result<Parsed> {
                 .with_context(|| format!("line number {}", i + 1))
         })
         .collect()
-}
-
-pub fn parse1(input: Input) -> anyhow::Result<Parsed1> {
-    parse(input)
-}
-
-pub fn parse2(input: Input) -> anyhow::Result<Parsed2> {
-    parse(input)
 }
 
 #[cfg(test)]
@@ -36,13 +26,13 @@ mod tests {
 
     #[test]
     fn parse1() -> anyhow::Result<()> {
-        dbg!(super::parse1(INPUT1)?);
+        dbg!(super::parse(INPUT1)?);
         Ok(())
     }
 
     #[test]
     fn parse2() -> anyhow::Result<()> {
-        dbg!(super::parse2(INPUT2)?);
+        dbg!(super::parse(INPUT2)?);
         Ok(())
     }
 }

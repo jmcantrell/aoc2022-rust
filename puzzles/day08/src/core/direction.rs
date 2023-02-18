@@ -1,6 +1,7 @@
 use super::Location;
 
 use Direction::*;
+
 pub const DIRECTIONS: [Direction; 4] = [North, East, South, West];
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

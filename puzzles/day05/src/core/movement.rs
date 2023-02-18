@@ -4,9 +4,9 @@ use super::{Crane, Stacks};
 
 #[derive(Debug, Clone)]
 pub struct Movement {
-    count: usize,
-    from: usize,
-    to: usize,
+    pub count: usize,
+    pub from: usize,
+    pub to: usize,
 }
 
 impl Movement {

@@ -1,6 +1,3 @@
-pub type Name<'a> = &'a str;
-pub type Value = isize;
-
 pub mod operation;
 pub use operation::*;
 

@@ -5,10 +5,8 @@ use aoc::Input;
 use crate::core::{Priority, Rucksack, Rucksacks};
 
 pub type Parsed = Rucksacks;
-pub type Parsed1 = Parsed;
-pub type Parsed2 = Parsed;
 
-fn parse(input: Input) -> anyhow::Result<Parsed> {
+pub fn parse(input: Input) -> anyhow::Result<Parsed> {
     fn parse_priority(c: char) -> anyhow::Result<Priority> {
         match c {
             'a'..='z' => Ok('a' as usize - 1),
@@ -35,14 +33,6 @@ fn parse(input: Input) -> anyhow::Result<Parsed> {
     parse_rucksacks(input).context("unable to parse rucksacks")
 }
 
-pub fn parse1(input: Input) -> anyhow::Result<Parsed1> {
-    parse(input)
-}
-
-pub fn parse2(input: Input) -> anyhow::Result<Parsed2> {
-    parse(input)
-}
-
 #[cfg(test)]
 mod tests {
     use aoc::Input;
@@ -50,14 +40,8 @@ mod tests {
     const INPUT: Input = include_str!("../../input-test.txt");
 
     #[test]
-    fn parse1() -> anyhow::Result<()> {
-        dbg!(super::parse1(INPUT)?);
-        Ok(())
-    }
-
-    #[test]
-    fn parse2() -> anyhow::Result<()> {
-        dbg!(super::parse2(INPUT)?);
+    fn parse() -> anyhow::Result<()> {
+        dbg!(super::parse(INPUT)?);
         Ok(())
     }
 }

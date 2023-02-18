@@ -2,7 +2,9 @@ use std::convert::TryFrom;
 
 use anyhow::{ensure, Context};
 
-use crate::core::{binary, prefix, Operator, Value};
+use crate::core::parse::ensure_prefix;
+
+use super::{Operator, Value};
 
 const NEW: &str = "new";
 
@@ -34,9 +36,12 @@ impl TryFrom<&str> for Operation {
                 .with_context(|| format!("invalid value: {s:?}"))
         }
 
-        let s = prefix(s, "Operation:")?;
+        let s = ensure_prefix(s, "Operation:")?;
 
-        let (lhs, rhs) = binary(s, "=")?;
+        let mut split = s.trim().splitn(2, '=');
+
+        let lhs = split.next().context("missing left hand side")?.trim();
+        let rhs = split.next().context("missing right hand side")?.trim();
 
         ensure!(
             lhs == NEW,

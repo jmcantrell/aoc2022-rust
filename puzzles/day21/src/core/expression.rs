@@ -1,4 +1,4 @@
-use super::Value;
+pub type Value = isize;
 
 pub enum Expression {
     Value(Value),

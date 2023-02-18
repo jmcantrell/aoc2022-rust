@@ -3,7 +3,9 @@ use std::convert::TryFrom;
 
 use anyhow::Context;
 
-use crate::core::{prefix, Operation, Test};
+use crate::core::parse::ensure_prefix;
+
+use super::{Operation, Test};
 
 pub type Item = usize;
 
@@ -34,7 +36,7 @@ impl TryFrom<&str> for Monkey {
         }
 
         fn parse_items(s: &str) -> anyhow::Result<VecDeque<Item>> {
-            prefix(s, "Starting items:")?
+            ensure_prefix(s, "Starting items:")?
                 .split(',')
                 .enumerate()
                 .map(|(i, s)| parse_item(s).with_context(|| format!("item number {}", i + 1)))

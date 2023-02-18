@@ -5,10 +5,8 @@ use aoc::Input;
 use crate::core::{Elf, Elves, Snack};
 
 pub type Parsed = Elves;
-pub type Parsed1 = Parsed;
-pub type Parsed2 = Parsed;
 
-fn parse(input: &str) -> anyhow::Result<Parsed> {
+pub fn parse(input: Input) -> anyhow::Result<Parsed> {
     fn parse_int(s: &str) -> anyhow::Result<usize> {
         s.parse().with_context(|| format!("invalid integer: {s:?}"))
     }
@@ -34,14 +32,6 @@ fn parse(input: &str) -> anyhow::Result<Parsed> {
     parse_elves(input).context("unable to parse elves")
 }
 
-pub fn parse1(input: Input) -> anyhow::Result<Parsed1> {
-    parse(input)
-}
-
-pub fn parse2(input: Input) -> anyhow::Result<Parsed2> {
-    parse(input)
-}
-
 #[cfg(test)]
 mod tests {
     use aoc::Input;
@@ -49,14 +39,8 @@ mod tests {
     const INPUT: Input = include_str!("../../input-test.txt");
 
     #[test]
-    fn parse1() -> anyhow::Result<()> {
-        dbg!(super::parse1(INPUT)?);
-        Ok(())
-    }
-
-    #[test]
-    fn parse2() -> anyhow::Result<()> {
-        dbg!(super::parse2(INPUT)?);
+    fn parse() -> anyhow::Result<()> {
+        dbg!(super::parse(INPUT)?);
         Ok(())
     }
 }

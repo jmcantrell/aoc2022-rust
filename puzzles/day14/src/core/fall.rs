@@ -5,6 +5,7 @@ use nalgebra::Vector2;
 use super::Location;
 
 use Fall::*;
+
 pub const FALLS: [Fall; 3] = [South, SouthWest, SouthEast];
 
 #[derive(Debug, Clone, Copy)]

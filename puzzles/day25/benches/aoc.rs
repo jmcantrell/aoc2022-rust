@@ -6,8 +6,8 @@ use day25::aoc::{Parser, Solver};
 
 const INPUT: Input = include_str!("../input.txt");
 
-fn benchmark<P: Parse, S: Solve<P> + Clone>(c: &mut Criterion, name: &str) {
-    let mut group = c.benchmark_group(format!("{}: {}", stringify!(day00), name));
+fn benchmark<P: Parse, S: Solve<P> + Clone>(c: &mut Criterion) {
+    let mut group = c.benchmark_group(stringify!(day25));
 
     let solver = S::new(P::new(INPUT).parse().unwrap());
 
@@ -23,7 +23,7 @@ fn benchmark<P: Parse, S: Solve<P> + Clone>(c: &mut Criterion, name: &str) {
 }
 
 fn answer(c: &mut Criterion) {
-    benchmark::<Parser, Solver>(c, "answer");
+    benchmark::<Parser, Solver>(c);
 }
 
 criterion_group!(benches, answer);

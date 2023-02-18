@@ -1,9 +1,9 @@
 use super::{Outcome, Score};
 
-use Shape::*;
-pub const SHAPES: [Shape; 3] = [Rock, Paper, Scissors];
-
 use Outcome::*;
+use Shape::*;
+
+pub const SHAPES: [Shape; 3] = [Rock, Paper, Scissors];
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Shape {

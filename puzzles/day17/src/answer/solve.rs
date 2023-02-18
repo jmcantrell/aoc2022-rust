@@ -1,13 +1,13 @@
 use crate::core::{Chamber, SampleKey};
 use std::collections::HashMap;
 
-use super::{Parsed1, Parsed2};
+use super::Parsed;
 
 pub type Solution = usize;
 pub type Solution1 = Solution;
 pub type Solution2 = Solution;
 
-pub fn solve1(jet_pattern: &Parsed1) -> anyhow::Result<Solution1> {
+pub fn solve1(jet_pattern: &Parsed) -> anyhow::Result<Solution1> {
     let mut chamber = Chamber::new(jet_pattern);
 
     for _ in 0..2022 {
@@ -17,7 +17,7 @@ pub fn solve1(jet_pattern: &Parsed1) -> anyhow::Result<Solution1> {
     Ok(chamber.height())
 }
 
-pub fn solve2(jet_pattern: &Parsed2) -> anyhow::Result<Solution2> {
+pub fn solve2(jet_pattern: &Parsed) -> anyhow::Result<Solution2> {
     type Iteration = usize;
     type Height = usize;
 
@@ -58,19 +58,19 @@ pub fn solve2(jet_pattern: &Parsed2) -> anyhow::Result<Solution2> {
 pub mod tests {
     use aoc::Input;
 
-    use crate::answer::{parse1, parse2};
+    use crate::answer::parse;
 
     const INPUT: Input = include_str!("../../input-test.txt");
 
     #[test]
     fn solve1() -> anyhow::Result<()> {
-        assert_eq!(super::solve1(&parse1(INPUT)?)?, 3_068);
+        assert_eq!(super::solve1(&parse(INPUT)?)?, 3_068);
         Ok(())
     }
 
     #[test]
     fn solve2() -> anyhow::Result<()> {
-        assert_eq!(super::solve2(&parse2(INPUT)?)?, 1_514_285_714_288);
+        assert_eq!(super::solve2(&parse(INPUT)?)?, 1_514_285_714_288);
         Ok(())
     }
 }

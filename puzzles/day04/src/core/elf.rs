@@ -1,6 +1,6 @@
 use anyhow::Context;
 
-use crate::core::SectionRange;
+use super::SectionRange;
 
 pub type AssignmentPairs = Vec<AssignmentPair>;
 

@@ -1,5 +1,4 @@
-pub mod datastream;
-pub use datastream::*;
+pub type DataStream = Vec<char>;
 
 pub mod iter;
 pub use iter::*;

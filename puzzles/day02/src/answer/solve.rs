@@ -10,17 +10,15 @@ fn get_my_total_score(scores: impl Iterator<Item = Round>) -> Score {
 }
 
 pub fn solve1(pairs: &Parsed1) -> anyhow::Result<Solution1> {
-    let scores = pairs.iter().map(|(shape1, shape2)| play(shape1, shape2));
-
-    Ok(get_my_total_score(scores))
+    Ok(get_my_total_score(
+        pairs.iter().map(|(shape1, shape2)| play(shape1, shape2)),
+    ))
 }
 
 pub fn solve2(pairs: &Parsed2) -> anyhow::Result<Solution2> {
-    let scores = pairs
-        .iter()
-        .map(|(shape, my_outcome)| play(shape, &my_outcome.ensure(shape)));
-
-    Ok(get_my_total_score(scores))
+    Ok(get_my_total_score(pairs.iter().map(
+        |(shape, my_outcome)| play(shape, &my_outcome.ensure(shape)),
+    )))
 }
 
 #[cfg(test)]

@@ -4,15 +4,15 @@ use aoc::{Parse, Solve};
 
 use crate::answer::{solve1, solve2, Solution1, Solution2};
 
-use super::{Parser1, Parser2};
+use super::Parser;
 
 #[derive(Debug, Clone)]
-pub struct Solver1(pub <Parser1 as Parse>::Parsed);
+pub struct Solver1(pub <Parser as Parse>::Parsed);
 
-impl Solve<Parser1> for Solver1 {
+impl Solve<Parser> for Solver1 {
     type Solution = Solution1;
 
-    fn new(parsed: <Parser1 as Parse>::Parsed) -> Self {
+    fn new(parsed: <Parser as Parse>::Parsed) -> Self {
         Self(parsed)
     }
 
@@ -22,12 +22,12 @@ impl Solve<Parser1> for Solver1 {
 }
 
 #[derive(Debug, Clone)]
-pub struct Solver2(pub <Parser2 as Parse>::Parsed);
+pub struct Solver2(pub <Parser as Parse>::Parsed);
 
-impl Solve<Parser2> for Solver2 {
+impl Solve<Parser> for Solver2 {
     type Solution = Solution2;
 
-    fn new(parsed: <Parser2 as Parse>::Parsed) -> Self {
+    fn new(parsed: <Parser as Parse>::Parsed) -> Self {
         Self(parsed)
     }
 

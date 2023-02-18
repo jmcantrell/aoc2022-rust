@@ -2,7 +2,7 @@ use std::convert::TryFrom;
 
 use anyhow::Context;
 
-use crate::core::prefix;
+use crate::core::parse::ensure_prefix;
 
 #[derive(Debug, Clone)]
 pub struct Test {
@@ -27,13 +27,14 @@ impl TryFrom<&str> for Test {
     fn try_from(s: &str) -> Result<Self, Self::Error> {
         let mut lines = s.lines();
 
-        let divisible_by = prefix(lines.next().context("missing test")?, "Test: divisible by")?;
+        let divisible_by =
+            ensure_prefix(lines.next().context("missing test")?, "Test: divisible by")?;
 
         let divisible_by = divisible_by
             .parse()
             .with_context(|| format!("invalid condition: {divisible_by:?}"))?;
 
-        let if_true = prefix(
+        let if_true = ensure_prefix(
             lines.next().context("missing true branch")?,
             "If true: throw to monkey",
         )?;
@@ -42,7 +43,7 @@ impl TryFrom<&str> for Test {
             .parse()
             .with_context(|| format!("invalid true branch: {if_true:?}"))?;
 
-        let if_false = prefix(
+        let if_false = ensure_prefix(
             lines.next().context("missing false branch")?,
             "If false: throw to monkey",
         )?;

@@ -13,7 +13,7 @@ impl Cube {
     pub fn points(&self) -> impl Iterator<Item = Point> + '_ {
         (self.min.x..=self.max.x).flat_map(move |x| {
             (self.min.y..=self.max.y)
-                .flat_map(move |y| (self.min.z..=self.max.z).map(move |z| Point { x, y, z }))
+                .flat_map(move |y| (self.min.z..=self.max.z).map(move |z| Point::new(x, y, z)))
         })
     }
 
@@ -26,11 +26,9 @@ impl Add<isize> for Cube {
     type Output = Self;
 
     fn add(self, n: isize) -> Self {
-        let increment = Point { x: n, y: n, z: n };
-
         Self {
-            min: self.min - increment,
-            max: self.max + increment,
+            min: self.min.map(|c| c - n),
+            max: self.max.map(|c| c + n),
         }
     }
 }

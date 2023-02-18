@@ -1,5 +1,4 @@
-pub mod point;
-pub use point::*;
+pub type Point = nalgebra::Point3<isize>;
 
 pub mod cube;
 pub use cube::*;

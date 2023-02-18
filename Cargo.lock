@@ -379,6 +379,7 @@ dependencies = [
  "anyhow",
  "aoc",
  "criterion",
+ "nalgebra",
 ]
 
 [[package]]

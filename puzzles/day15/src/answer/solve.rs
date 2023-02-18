@@ -4,7 +4,7 @@ use anyhow::ensure;
 
 use crate::core::{coalesce_ranges, Point, TaxicabCircle};
 
-use super::{Parsed1, Parsed2};
+use super::Parsed;
 
 pub type Solution1 = usize;
 pub type Solution2 = isize;
@@ -23,7 +23,7 @@ mod consts {
 
 use consts::*;
 
-pub fn solve1(grid: &Parsed1) -> anyhow::Result<Solution1> {
+pub fn solve1(grid: &Parsed) -> anyhow::Result<Solution1> {
     let (mut top_left, mut bottom_right) = grid.extents();
 
     top_left.y = ROW;
@@ -43,7 +43,7 @@ pub fn solve1(grid: &Parsed1) -> anyhow::Result<Solution1> {
         .count())
 }
 
-pub fn solve2(grid: &Parsed2) -> anyhow::Result<Solution2> {
+pub fn solve2(grid: &Parsed) -> anyhow::Result<Solution2> {
     let top_left = Point::default();
     let bottom_right = Point::new(MAX_COMPONENT, MAX_COMPONENT);
 
@@ -86,19 +86,19 @@ pub fn solve2(grid: &Parsed2) -> anyhow::Result<Solution2> {
 pub mod tests {
     use aoc::Input;
 
-    use crate::answer::{parse1, parse2};
+    use crate::answer::parse;
 
     const INPUT: Input = include_str!("../../input-test.txt");
 
     #[test]
     fn solve1() -> anyhow::Result<()> {
-        assert_eq!(super::solve1(&parse1(INPUT)?)?, 26);
+        assert_eq!(super::solve1(&parse(INPUT)?)?, 26);
         Ok(())
     }
 
     #[test]
     fn solve2() -> anyhow::Result<()> {
-        assert_eq!(super::solve2(&parse2(INPUT)?)?, 56_000_011);
+        assert_eq!(super::solve2(&parse(INPUT)?)?, 56_000_011);
         Ok(())
     }
 }

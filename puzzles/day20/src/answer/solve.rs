@@ -1,6 +1,6 @@
 use crate::core::{Decryptor, Value};
 
-use super::{Parsed, Parsed1, Parsed2};
+use super::Parsed;
 
 pub type Solution = Value;
 pub type Solution1 = Solution;
@@ -13,11 +13,11 @@ fn decrypt(values: &Parsed, decryption_key: Value, iterations: usize) -> Solutio
         .sum()
 }
 
-pub fn solve1(parsed: &Parsed1) -> anyhow::Result<Solution1> {
+pub fn solve1(parsed: &Parsed) -> anyhow::Result<Solution1> {
     Ok(decrypt(parsed, 1, 1))
 }
 
-pub fn solve2(parsed: &Parsed2) -> anyhow::Result<Solution2> {
+pub fn solve2(parsed: &Parsed) -> anyhow::Result<Solution2> {
     Ok(decrypt(parsed, 811_589_153, 10))
 }
 
@@ -25,19 +25,19 @@ pub fn solve2(parsed: &Parsed2) -> anyhow::Result<Solution2> {
 pub mod tests {
     use aoc::Input;
 
-    use crate::answer::{parse1, parse2};
+    use crate::answer::parse;
 
     const INPUT: Input = include_str!("../../input-test.txt");
 
     #[test]
     fn solve1() -> anyhow::Result<()> {
-        assert_eq!(super::solve1(&parse1(INPUT)?)?, 3);
+        assert_eq!(super::solve1(&parse(INPUT)?)?, 3);
         Ok(())
     }
 
     #[test]
     fn solve2() -> anyhow::Result<()> {
-        assert_eq!(super::solve2(&parse2(INPUT)?)?, 1_623_178_306);
+        assert_eq!(super::solve2(&parse(INPUT)?)?, 1_623_178_306);
         Ok(())
     }
 }

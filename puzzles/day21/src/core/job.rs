@@ -2,12 +2,12 @@ use anyhow::Context;
 
 use crate::core::Operation;
 
-use super::{Name, Value};
+use super::Value;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Job<'a> {
     Value(Value),
-    Operation(Operation, Name<'a>, Name<'a>),
+    Operation(Operation, &'a str, &'a str),
 }
 
 impl<'a> TryFrom<&'a str> for Job<'a> {

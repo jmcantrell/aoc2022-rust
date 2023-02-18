@@ -1,6 +1,7 @@
 use super::Shape;
 
 use Outcome::*;
+
 pub const OUTCOMES: [Outcome; 3] = [Lose, Draw, Win];
 
 #[derive(Debug, Clone, Copy, PartialEq)]

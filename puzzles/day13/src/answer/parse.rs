@@ -5,10 +5,8 @@ use aoc::Input;
 use crate::core::{Packet, PacketPair};
 
 pub type Parsed = Vec<PacketPair>;
-pub type Parsed1 = Parsed;
-pub type Parsed2 = Parsed;
 
-fn parse(input: Input) -> anyhow::Result<Parsed> {
+pub fn parse(input: Input) -> anyhow::Result<Parsed> {
     fn parse_packet_pair(s: &str) -> anyhow::Result<PacketPair> {
         let packets = s
             .lines()
@@ -31,14 +29,6 @@ fn parse(input: Input) -> anyhow::Result<Parsed> {
         .collect::<Result<Vec<_>, _>>()
 }
 
-pub fn parse1(input: Input) -> anyhow::Result<Parsed1> {
-    parse(input)
-}
-
-pub fn parse2(input: Input) -> anyhow::Result<Parsed2> {
-    parse(input)
-}
-
 #[cfg(test)]
 mod tests {
     use aoc::Input;
@@ -46,14 +36,8 @@ mod tests {
     const INPUT: Input = include_str!("../../input-test.txt");
 
     #[test]
-    fn parse1() -> anyhow::Result<()> {
-        dbg!(super::parse1(INPUT)?);
-        Ok(())
-    }
-
-    #[test]
-    fn parse2() -> anyhow::Result<()> {
-        dbg!(super::parse2(INPUT)?);
+    fn parse() -> anyhow::Result<()> {
+        dbg!(super::parse(INPUT)?);
         Ok(())
     }
 }
