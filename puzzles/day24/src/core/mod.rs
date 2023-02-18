@@ -14,6 +14,3 @@ pub use map::*;
 
 pub mod map_iter;
 pub use map_iter::*;
-
-pub mod traversal;
-pub use traversal::*;
