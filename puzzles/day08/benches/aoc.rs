@@ -7,7 +7,7 @@ use day08::aoc::{Parser, Solver1, Solver2};
 const INPUT: Input = include_str!("../input.txt");
 
 fn benchmark<P: Parse, S: Solve<P> + Clone>(c: &mut Criterion, name: &str) {
-    let mut group = c.benchmark_group(format!("{}:{}", stringify!(day08), name));
+    let mut group = c.benchmark_group(format!("{}/{}", stringify!(day08), name));
 
     let solver = S::new(P::new(INPUT).parse().unwrap());
 
