@@ -30,15 +30,15 @@ impl<'a> Walk<'a> for Board {
 
 impl From<Map> for Board {
     fn from(map: Map) -> Self {
-        let (nrows, ncols) = map.grid.shape();
+        let (height, width) = map.grid.shape();
 
         let mut horizontal_portals = HashMap::new();
 
-        for row in 0..nrows {
-            if let Some(first_col) = (0..ncols).find(|&col| map.grid[(row, col)].is_some()) {
-                let last_col = (0..ncols)
+        for row in 0..height {
+            if let Some(first_col) = (0..width).find(|&column| map.grid[(row, column)].is_some()) {
+                let last_col = (0..width)
                     .rev()
-                    .find(|&col| map.grid[(row, col)].is_some())
+                    .find(|&column| map.grid[(row, column)].is_some())
                     .unwrap_or(first_col);
 
                 let first = (row, first_col);
@@ -51,15 +51,15 @@ impl From<Map> for Board {
 
         let mut vertical_portals = HashMap::new();
 
-        for col in 0..ncols {
-            if let Some(first_row) = (0..nrows).find(|&row| map.grid[(row, col)].is_some()) {
-                let last_row = (0..nrows)
+        for column in 0..width {
+            if let Some(first_row) = (0..height).find(|&row| map.grid[(row, column)].is_some()) {
+                let last_row = (0..height)
                     .rev()
-                    .find(|&row| map.grid[(row, col)].is_some())
+                    .find(|&row| map.grid[(row, column)].is_some())
                     .unwrap_or(first_row);
 
-                let first = (first_row, col);
-                let last = (last_row, col);
+                let first = (first_row, column);
+                let last = (last_row, column);
 
                 vertical_portals.insert(first, last);
                 vertical_portals.insert(last, first);

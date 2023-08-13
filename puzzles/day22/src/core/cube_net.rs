@@ -84,8 +84,8 @@ fn describe_net<T>(net: &Net<T>) -> String {
     let mut description = String::new();
 
     for row in net.row_iter() {
-        for value in row.iter() {
-            description.push(match value {
+        for maybe_value in row.iter() {
+            description.push(match maybe_value {
                 Some(_) => '#',
                 None => '.',
             });
@@ -103,22 +103,30 @@ impl fmt::Display for CubeNet {
 }
 
 fn inner_some<T>(grid: &Grid<Option<T>>) -> Option<(Location, Location)> {
-    let (nrows, ncols) = grid.shape();
+    let (height, width) = grid.shape();
 
-    let top = (0..nrows).find(|&i| grid.row(i).iter().any(|val| val.is_some()))?;
+    let top = (0..height).find(|&i| grid.row(i).iter().any(|maybe_value| maybe_value.is_some()))?;
 
-    let bottom = (0..nrows)
+    let bottom = (0..height)
         .rev()
-        .find(|&i| grid.row(i).iter().any(|val| val.is_some()))
+        .find(|&i| grid.row(i).iter().any(|maybe_value| maybe_value.is_some()))
         .unwrap_or(top);
 
-    let left = (0..ncols)
-        .find(|&i| grid.column(i).iter().any(|val| val.is_some()))
+    let left = (0..width)
+        .find(|&i| {
+            grid.column(i)
+                .iter()
+                .any(|maybe_value| maybe_value.is_some())
+        })
         .unwrap();
 
-    let right = (0..ncols)
+    let right = (0..width)
         .rev()
-        .find(|&i| grid.column(i).iter().any(|val| val.is_some()))
+        .find(|&i| {
+            grid.column(i)
+                .iter()
+                .any(|maybe_value| maybe_value.is_some())
+        })
         .unwrap_or(left);
 
     Some(((top, left), (bottom, right)))
@@ -130,12 +138,14 @@ fn map_adjacency<T: std::fmt::Debug>(net: &Net<T>) -> Edges {
     let mut edges = Edges::new();
 
     let neighbor = |loc: Location, dir: CardinalDirection| -> Option<Location> {
-        dir.neighbor(loc)
-            .and_then(|adj| net.get(adj).and_then(|val| val.is_some().then_some(adj)))
+        dir.neighbor(loc).and_then(|adj| {
+            net.get(adj)
+                .and_then(|maybe_value| maybe_value.is_some().then_some(adj))
+        })
     };
 
     if let Some(start) = (0..net.nrows())
-        .flat_map(|row| (0..net.ncols()).map(move |col| (row, col)))
+        .flat_map(|row| (0..net.ncols()).map(move |column| (row, column)))
         .find(|&loc| net[loc].is_some())
     {
         frontier.push(start);
@@ -162,8 +172,10 @@ fn map_adjacency<T: std::fmt::Debug>(net: &Net<T>) -> Edges {
 
 fn try_wrap_edges<T>(net: &Net<T>, mut edges: Edges) -> anyhow::Result<Edges> {
     let neighbor = |loc: Location, dir: CardinalDirection| -> Option<Location> {
-        dir.neighbor(loc)
-            .and_then(|adj| net.get(adj).and_then(|val| val.is_some().then_some(adj)))
+        dir.neighbor(loc).and_then(|adj| {
+            net.get(adj)
+                .and_then(|maybe_value| maybe_value.is_some().then_some(adj))
+        })
     };
 
     for (&start, adjacency) in edges.iter_mut() {
@@ -225,14 +237,14 @@ impl<T> TryFrom<&Net<T>> for CubeNet {
             .flat_map(|row| {
                 (left..(left + size * NET_SIZE))
                     .step_by(size)
-                    .map(move |col| (row, col))
+                    .map(move |column| (row, column))
             })
         {
             let face_top_left = (face_top, face_left);
 
             if net
                 .get(face_top_left)
-                .map(|val| val.as_ref())
+                .map(|maybe_value| maybe_value.as_ref())
                 .unwrap_or_default()
                 .is_none()
             {
@@ -243,7 +255,7 @@ impl<T> TryFrom<&Net<T>> for CubeNet {
             let mut face = Vec::with_capacity(face_area);
 
             for (face_row, face_col) in (face_top..(face_top + size))
-                .flat_map(|row| (face_left..(face_left + size)).map(move |col| (row, col)))
+                .flat_map(|row| (face_left..(face_left + size)).map(move |column| (row, column)))
             {
                 ensure!(
                     net[(face_row, face_col)].is_some(),
@@ -258,7 +270,10 @@ impl<T> TryFrom<&Net<T>> for CubeNet {
             faces.push(Some(Face::from_row_iterator(size, size, face.into_iter())));
         }
 
-        let faces_len = faces.iter().filter(|value| value.is_some()).count();
+        let faces_len = faces
+            .iter()
+            .filter(|maybe_value| maybe_value.is_some())
+            .count();
 
         ensure!(
             faces_len == FACES_LEN,
@@ -276,13 +291,13 @@ impl<T> TryFrom<&Net<T>> for CubeNet {
 
         let edges = try_wrap_edges(&faces, edges)?;
 
-        for ((row, col), adjacency) in edges.iter() {
+        for ((row, column), adjacency) in edges.iter() {
             for edge in DIRECTIONS {
                 ensure!(
                     adjacency.contains_key(&edge),
                     "face at row {} and column {} is missing its {edge} edge",
                     row + 1,
-                    col + 1
+                    column + 1
                 );
             }
         }
@@ -335,9 +350,9 @@ mod tests {
     fn key_from_net<T>(net: &Net<T>) -> NetKey {
         let mut key = 0;
 
-        for value in net.iter() {
+        for maybe_value in net.iter() {
             key <<= 1;
-            if value.is_some() {
+            if maybe_value.is_some() {
                 key |= 1;
             }
         }

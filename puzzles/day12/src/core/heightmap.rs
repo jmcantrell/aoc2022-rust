@@ -17,7 +17,7 @@ pub struct HeightMap {
 impl HeightMap {
     fn locations(&self) -> impl Iterator<Item = (usize, usize)> + '_ {
         (0..self.grid.nrows())
-            .flat_map(move |row| (0..self.grid.ncols()).map(move |col| (row, col)))
+            .flat_map(move |row| (0..self.grid.ncols()).map(move |column| (row, column)))
     }
 
     fn breadcrumbs(&self) -> BreadCrumbs {

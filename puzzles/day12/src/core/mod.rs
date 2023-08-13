@@ -1,4 +1,5 @@
-pub type Location = (usize, usize);
+pub type Coordinate = usize;
+pub type Location = (Coordinate, Coordinate);
 pub type Grid<T> = nalgebra::DMatrix<T>;
 
 pub mod direction;

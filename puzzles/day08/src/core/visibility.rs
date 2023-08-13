@@ -26,17 +26,17 @@ impl<T: PartialOrd> From<&Grid<T>> for Visibility {
             }
         }
 
-        let (nrows, ncols) = grid.shape();
-        let mut results: Grid<bool> = Grid::from_element(nrows, ncols, false);
+        let (height, width) = grid.shape();
+        let mut results: Grid<bool> = Grid::from_element(height, width, false);
 
-        for row in 0..nrows {
-            let line = (0..ncols).map(|col| (row, col));
+        for row in 0..height {
+            let line = (0..width).map(|column| (row, column));
             scan_line(&mut results, grid, line.clone());
             scan_line(&mut results, grid, line.rev());
         }
 
-        for col in 0..ncols {
-            let line = (0..nrows).map(|row| (row, col));
+        for column in 0..width {
+            let line = (0..height).map(|row| (row, column));
             scan_line(&mut results, grid, line.clone());
             scan_line(&mut results, grid, line.rev());
         }

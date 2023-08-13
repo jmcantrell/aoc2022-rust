@@ -18,14 +18,14 @@ enum IndexTransform {
 }
 
 impl IndexTransform {
-    pub fn eval(&self, (row, col): Location, size: usize) -> usize {
+    pub fn eval(&self, (row, column): Location, size: usize) -> usize {
         match self {
             Row => row,
-            Column => col,
+            Column => column,
             First => 0,
             Last => size - 1,
             InverseRow => size - row - 1,
-            InverseColumn => size - col - 1,
+            InverseColumn => size - column - 1,
         }
     }
 }
@@ -86,7 +86,7 @@ impl TryFrom<Map> for Cube {
         for (&from, adjacency) in net.edges.iter() {
             let face = net.faces[from].as_ref().unwrap();
 
-            let (nrows, ncols) = face.shape();
+            let (height, width) = face.shape();
 
             for edge in directions {
                 let &(other_edge, to) = adjacency.get(&edge).unwrap();
@@ -96,13 +96,14 @@ impl TryFrom<Map> for Cube {
                     EDGE_TRANSITIONS.get(&(edge, other_edge)).unwrap();
 
                 let (rr, cr) = match edge {
-                    North => (0..1, 0..ncols),
-                    South => ((nrows - 1)..nrows, 0..ncols),
-                    West => (0..nrows, 0..1),
-                    East => (0..nrows, (ncols - 1)..ncols),
+                    North => (0..1, 0..width),
+                    South => ((height - 1)..height, 0..width),
+                    West => (0..height, 0..1),
+                    East => (0..height, (width - 1)..width),
                 };
 
-                for edge_location in rr.flat_map(|row| cr.clone().map(move |col| (row, col))) {
+                for edge_location in rr.flat_map(|row| cr.clone().map(move |column| (row, column)))
+                {
                     let other_edge_location = (
                         row_transform.eval(edge_location, net.size),
                         column_transform.eval(edge_location, net.size),

@@ -19,11 +19,11 @@ impl Walker {
     }
 
     pub fn neighbor(&self) -> Option<(Location, Tile)> {
-        self.direction.neighbor(self.location).and_then(|loc| {
+        self.direction.neighbor(self.location).and_then(|location| {
             self.map
                 .grid
-                .get(loc)
-                .and_then(|val| val.map(|val| (loc, val)))
+                .get(location)
+                .and_then(|maybe_value| maybe_value.map(|value| (location, value)))
         })
     }
 
@@ -39,11 +39,15 @@ impl Walker {
 pub trait Walk<'a> {
     fn walker(&self) -> Walker;
 
-    fn portal(&self, loc: Location, dir: CardinalDirection) -> (Location, CardinalDirection, Tile);
+    fn portal(
+        &self,
+        location: Location,
+        direction: CardinalDirection,
+    ) -> (Location, CardinalDirection, Tile);
 
     fn step(&self, walker: &mut Walker) -> bool {
-        let (loc, dir, tile) = match walker.neighbor() {
-            Some((loc, tile)) => (loc, walker.direction, tile),
+        let (location, direction, tile) = match walker.neighbor() {
+            Some((location, tile)) => (location, walker.direction, tile),
             None => self.portal(walker.location, walker.direction),
         };
 
@@ -51,8 +55,8 @@ pub trait Walk<'a> {
             return false;
         }
 
-        walker.location = loc;
-        walker.direction = dir;
+        walker.location = location;
+        walker.direction = direction;
         walker.record();
 
         true

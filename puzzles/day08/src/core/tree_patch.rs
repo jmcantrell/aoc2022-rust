@@ -12,7 +12,7 @@ pub struct TreePatch {
 impl TreePatch {
     fn iter_locations(&self) -> impl Iterator<Item = (usize, usize)> + '_ {
         (0..self.grid.nrows())
-            .flat_map(move |row| (0..self.grid.ncols()).map(move |col| (row, col)))
+            .flat_map(move |row| (0..self.grid.ncols()).map(move |column| (row, column)))
     }
 }
 
@@ -59,22 +59,22 @@ impl TryFrom<&str> for TreePatch {
 
         ensure!(!rows.is_empty(), "grid is empty");
 
-        let nrows = rows.len();
-        let ncols = rows[0].len();
+        let height = rows.len();
+        let width = rows[0].len();
 
         for (i, row) in rows.iter().skip(1).enumerate() {
             ensure!(
-                row.len() == ncols,
+                row.len() == width,
                 "expected row number {} to have {} columns, but it had {}",
                 i + 1,
-                ncols,
+                width,
                 row.len()
             );
         }
 
         let grid = Grid::from_row_iterator(
-            nrows,
-            ncols,
+            height,
+            width,
             rows.into_iter().flat_map(|row| row.into_iter()),
         );
 

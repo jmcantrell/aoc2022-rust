@@ -122,11 +122,11 @@ impl fmt::Display for Grove {
         let ([top, left], [bottom, right]) = self.extents();
 
         for row in top..=bottom {
-            for col in left..=right {
+            for column in left..=right {
                 write!(
                     f,
                     "{}",
-                    if self.elves.contains(&[row, col]) {
+                    if self.elves.contains(&[row, column]) {
                         '#'
                     } else {
                         '.'
@@ -167,9 +167,9 @@ impl TryFrom<&str> for Grove {
                 );
 
                 let row = isize::try_from(i).context("too many rows")?;
-                let col = isize::try_from(j).context("too many columns")?;
+                let column = isize::try_from(j).context("too many columns")?;
 
-                elves.insert([row, col]);
+                elves.insert([row, column]);
             }
         }
 

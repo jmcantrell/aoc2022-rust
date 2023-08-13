@@ -9,15 +9,15 @@ pub struct ScenicScores {
 
 impl<T: PartialOrd> From<&Grid<T>> for ScenicScores {
     fn from(grid: &Grid<T>) -> Self {
-        let (nrows, ncols) = grid.shape();
-        let mut results: Grid<ScenicScore> = Grid::from_element(nrows, ncols, 1);
+        let (height, width) = grid.shape();
+        let mut results: Grid<ScenicScore> = Grid::from_element(height, width, 1);
 
         let neighbor = |loc: Location, dir: Direction| {
             dir.neighbor(loc)
                 .and_then(|loc| grid.get(loc).is_some().then_some(loc))
         };
 
-        for start in (0..nrows).flat_map(|row| (0..ncols).map(move |col| (row, col))) {
+        for start in (0..height).flat_map(|row| (0..width).map(move |column| (row, column))) {
             let start_height = &grid[start];
 
             for dir in DIRECTIONS {

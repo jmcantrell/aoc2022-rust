@@ -13,12 +13,12 @@ pub enum Direction {
 }
 
 impl Direction {
-    pub fn neighbor(&self, (row, col): Location) -> Option<Location> {
+    pub fn neighbor(&self, (row, column): Location) -> Option<Location> {
         match self {
-            North => row.checked_sub(1).map(|row| (row, col)),
-            South => row.checked_add(1).map(|row| (row, col)),
-            West => col.checked_sub(1).map(|col| (row, col)),
-            East => col.checked_add(1).map(|col| (row, col))
+            North => row.checked_sub(1).map(|row| (row, column)),
+            South => row.checked_add(1).map(|row| (row, column)),
+            West => column.checked_sub(1).map(|column| (row, column)),
+            East => column.checked_add(1).map(|column| (row, column))
         }
     }
 }

@@ -1,6 +1,7 @@
-pub type Size = nalgebra::Vector2<usize>;
+pub type Coordinate = usize;
+pub type Size = nalgebra::Vector2<Coordinate>;
+pub type Location = (Coordinate, Coordinate);
 pub type Grid<T> = nalgebra::DMatrix<T>;
-pub type Location = (usize, usize);
 
 pub mod direction;
 pub use direction::*;
