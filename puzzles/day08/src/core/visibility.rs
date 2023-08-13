@@ -1,4 +1,4 @@
-use super::Grid;
+use super::{Grid, Location};
 
 #[derive(Debug, Clone)]
 pub struct Visibility {
@@ -10,17 +10,17 @@ impl<T: PartialOrd> From<&Grid<T>> for Visibility {
         fn scan_line<T: PartialOrd>(
             results: &mut Grid<bool>,
             grid: &Grid<T>,
-            mut line: impl Iterator<Item = (usize, usize)>,
+            mut line: impl Iterator<Item = Location>,
         ) {
-            let loc = line.next().unwrap();
-            results[loc] = true;
+            let location = line.next().unwrap();
+            results[location] = true;
 
-            let mut max_height = &grid[loc];
+            let mut max_height = &grid[location];
 
-            for loc in line {
-                let height = &grid[loc];
+            for location in line {
+                let height = &grid[location];
                 if height > max_height {
-                    results[loc] = true;
+                    results[location] = true;
                     max_height = height;
                 }
             }

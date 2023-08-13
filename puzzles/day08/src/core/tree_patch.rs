@@ -1,6 +1,6 @@
 use anyhow::{anyhow, ensure, Context};
 
-use super::{Grid, ScenicScore, ScenicScores, Visibility};
+use super::{Grid, Location, ScenicScore, ScenicScores, Visibility};
 
 pub type Height = u8;
 
@@ -10,7 +10,7 @@ pub struct TreePatch {
 }
 
 impl TreePatch {
-    fn iter_locations(&self) -> impl Iterator<Item = (usize, usize)> + '_ {
+    fn iter_locations(&self) -> impl Iterator<Item = Location> + '_ {
         (0..self.grid.nrows())
             .flat_map(move |row| (0..self.grid.ncols()).map(move |column| (row, column)))
     }
@@ -20,14 +20,14 @@ impl TreePatch {
     pub fn count_visible(&self) -> usize {
         let visibility = Visibility::from(&self.grid);
         self.iter_locations()
-            .filter(|loc| visibility.grid[*loc])
+            .filter(|location| visibility.grid[*location])
             .count()
     }
 
     pub fn max_scenic_score(&self) -> ScenicScore {
         let scenic_scores = ScenicScores::from(&self.grid);
         self.iter_locations()
-            .map(|loc| scenic_scores.grid[loc])
+            .map(|location| scenic_scores.grid[location])
             .max()
             .unwrap_or_default()
     }

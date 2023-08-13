@@ -15,7 +15,7 @@ pub struct HeightMap {
 }
 
 impl HeightMap {
-    fn locations(&self) -> impl Iterator<Item = (usize, usize)> + '_ {
+    fn locations(&self) -> impl Iterator<Item = Location> + '_ {
         (0..self.grid.nrows())
             .flat_map(move |row| (0..self.grid.ncols()).map(move |column| (row, column)))
     }

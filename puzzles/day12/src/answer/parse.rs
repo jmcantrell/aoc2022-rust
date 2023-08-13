@@ -4,10 +4,20 @@ use aoc::Input;
 
 use crate::core::HeightMap;
 
-pub type Parsed = HeightMap;
+type Parsed = HeightMap;
+pub type Parsed1 = Parsed;
+pub type Parsed2 = Parsed;
 
-pub fn parse(input: Input) -> anyhow::Result<Parsed> {
+fn parse(input: Input) -> anyhow::Result<Parsed> {
     input.try_into().context("unable to parse height map")
+}
+
+pub fn parse1(input: Input) -> anyhow::Result<Parsed1> {
+    parse(input)
+}
+
+pub fn parse2(input: Input) -> anyhow::Result<Parsed1> {
+    parse(input)
 }
 
 #[cfg(test)]

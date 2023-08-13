@@ -18,7 +18,7 @@ impl Direction {
             North => row.checked_sub(1).map(|row| (row, column)),
             South => row.checked_add(1).map(|row| (row, column)),
             West => column.checked_sub(1).map(|column| (row, column)),
-            East => column.checked_add(1).map(|column| (row, column))
+            East => column.checked_add(1).map(|column| (row, column)),
         }
     }
 }
