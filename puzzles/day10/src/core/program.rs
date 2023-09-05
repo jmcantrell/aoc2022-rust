@@ -32,10 +32,10 @@ impl TryFrom<&str> for Command {
             "addx" => {
                 let arg = words
                     .next()
-                    .context("{:?} command is missing it's argument")?;
+                    .with_context(|| format!("{:?} command is missing it's argument", command))?;
                 let value: isize = arg
                     .parse()
-                    .with_context(|| format!("invalid integer: {arg:?}"))?;
+                    .with_context(|| format!("invalid integer: {:?}", arg))?;
                 Ok(Self::AddX(value))
             }
             _ => Err(anyhow!("unrecognized command: {:?}", command)),
