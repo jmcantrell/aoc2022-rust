@@ -5,23 +5,23 @@ use std::iter::Cycle;
 
 use anyhow::{ensure, Context};
 
-use super::Point;
+use super::Location;
 
-pub type Choices = [Point; 3];
+pub type Choices = [Location; 3];
 
-const NORTH: Point = [-1, 0];
-const SOUTH: Point = [1, 0];
-const WEST: Point = [0, -1];
-const EAST: Point = [0, 1];
+const NORTH: Location = [-1, 0];
+const SOUTH: Location = [1, 0];
+const WEST: Location = [0, -1];
+const EAST: Location = [0, 1];
 
-const fn add_points(a: Point, b: Point) -> Point {
+const fn add_locations(a: Location, b: Location) -> Location {
     [a[0] + b[0], a[1] + b[1]]
 }
 
-const NORTH_WEST: Point = add_points(NORTH, WEST);
-const NORTH_EAST: Point = add_points(NORTH, EAST);
-const SOUTH_WEST: Point = add_points(SOUTH, WEST);
-const SOUTH_EAST: Point = add_points(SOUTH, EAST);
+const NORTH_WEST: Location = add_locations(NORTH, WEST);
+const NORTH_EAST: Location = add_locations(NORTH, EAST);
+const SOUTH_WEST: Location = add_locations(SOUTH, WEST);
+const SOUTH_EAST: Location = add_locations(SOUTH, EAST);
 
 const DIRECTIONS: [Choices; 4] = [
     [NORTH, NORTH_EAST, NORTH_WEST],
@@ -32,12 +32,12 @@ const DIRECTIONS: [Choices; 4] = [
 
 #[derive(Debug, Clone)]
 pub struct Grove {
-    elves: HashSet<Point>,
+    elves: HashSet<Location>,
     directions: Cycle<IntoIter<Choices, 4>>,
 }
 
 impl Grove {
-    pub fn new(elves: HashSet<Point>) -> Self {
+    pub fn new(elves: HashSet<Location>) -> Self {
         if elves.is_empty() {
             panic!("no elves");
         }
@@ -48,7 +48,7 @@ impl Grove {
         }
     }
 
-    fn extents(&self) -> (Point, Point) {
+    fn extents(&self) -> (Location, Location) {
         let mut elves = self.elves.clone().into_iter();
 
         let mut top_left = elves.next().unwrap();
@@ -82,7 +82,7 @@ impl Grove {
     }
 
     pub fn iterate(&mut self) -> bool {
-        let mut proposals: HashMap<Point, Vec<Point>> = HashMap::new();
+        let mut proposals: HashMap<Location, Vec<Location>> = HashMap::new();
 
         for &elf in self.elves.iter() {
             let mut possibilities = Vec::with_capacity(DIRECTIONS.len());
@@ -90,9 +90,9 @@ impl Grove {
             for choices in self.directions.clone().take(DIRECTIONS.len()) {
                 if choices
                     .into_iter()
-                    .all(|choice| !self.elves.contains(&add_points(elf, choice)))
+                    .all(|choice| !self.elves.contains(&add_locations(elf, choice)))
                 {
-                    possibilities.push(add_points(elf, choices[0]));
+                    possibilities.push(add_locations(elf, choices[0]));
                 }
             }
 
@@ -140,8 +140,8 @@ impl fmt::Display for Grove {
     }
 }
 
-impl From<HashSet<Point>> for Grove {
-    fn from(elves: HashSet<Point>) -> Self {
+impl From<HashSet<Location>> for Grove {
+    fn from(elves: HashSet<Location>) -> Self {
         Self::new(elves)
     }
 }
