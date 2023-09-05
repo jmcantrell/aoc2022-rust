@@ -1,7 +1,7 @@
 use crate::answer::{Parsed1, Parsed2};
 use crate::core::{play, Round, Score};
 
-pub type Solution = usize;
+type Solution = usize;
 pub type Solution1 = Solution;
 pub type Solution2 = Solution;
 

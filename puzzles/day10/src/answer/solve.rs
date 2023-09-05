@@ -1,11 +1,11 @@
 use crate::core::Machine;
 
-use super::Parsed;
+use super::{Parsed1, Parsed2};
 
 pub type Solution1 = isize;
 pub type Solution2 = String;
 
-pub fn solve1(program: &Parsed) -> anyhow::Result<Solution1> {
+pub fn solve1(program: &Parsed1) -> anyhow::Result<Solution1> {
     let start = 20;
     let step = 40;
 
@@ -21,7 +21,7 @@ pub fn solve1(program: &Parsed) -> anyhow::Result<Solution1> {
     Ok(signal_strengths.sum())
 }
 
-pub fn solve2(program: &Parsed) -> anyhow::Result<Solution2> {
+pub fn solve2(program: &Parsed2) -> anyhow::Result<Solution2> {
     let mut display = String::new();
     let mut machine = Machine::new(program.clone());
 
@@ -53,20 +53,20 @@ pub fn solve2(program: &Parsed) -> anyhow::Result<Solution2> {
 pub mod tests {
     use aoc::Input;
 
-    use crate::answer::parse;
+    use crate::answer::{parse1, parse2};
 
     const INPUT: Input = include_str!("../../input-test.txt");
     const OUTPUT2: Input = include_str!("../../output-test-2.txt");
 
     #[test]
     fn solve1() -> anyhow::Result<()> {
-        assert_eq!(super::solve1(&parse(INPUT)?)?, 13140);
+        assert_eq!(super::solve1(&parse1(INPUT)?)?, 13140);
         Ok(())
     }
 
     #[test]
     fn solve2() -> anyhow::Result<()> {
-        assert_eq!(super::solve2(&parse(INPUT)?)?, OUTPUT2);
+        assert_eq!(super::solve2(&parse2(INPUT)?)?, OUTPUT2);
         Ok(())
     }
 }

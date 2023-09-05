@@ -2,10 +2,20 @@ use aoc::Input;
 
 use crate::core::DataStream;
 
-pub type Parsed = DataStream;
+type Parsed = DataStream;
+pub type Parsed1 = Parsed;
+pub type Parsed2 = Parsed;
 
-pub fn parse(input: Input) -> anyhow::Result<DataStream> {
+fn parse(input: Input) -> anyhow::Result<DataStream> {
     Ok(input.chars().collect())
+}
+
+pub fn parse1(input: Input) -> anyhow::Result<Parsed1> {
+    parse(input)
+}
+
+pub fn parse2(input: Input) -> anyhow::Result<Parsed2> {
+    parse(input)
 }
 
 #[cfg(test)]

@@ -4,7 +4,7 @@ use aoc::Input;
 
 use crate::core::{Board, Cube, Map, Movement};
 
-pub type Parsed = (Map, Vec<Movement>);
+type Parsed = (Map, Vec<Movement>);
 pub type Parsed1 = (Board, Vec<Movement>);
 pub type Parsed2 = (Cube, Vec<Movement>);
 

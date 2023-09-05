@@ -4,9 +4,11 @@ use aoc::Input;
 
 use crate::core::{Elf, Elves, Snack};
 
-pub type Parsed = Elves;
+type Parsed = Elves;
+pub type Parsed1 = Parsed;
+pub type Parsed2 = Parsed;
 
-pub fn parse(input: Input) -> anyhow::Result<Parsed> {
+fn parse(input: Input) -> anyhow::Result<Parsed> {
     fn parse_int(s: &str) -> anyhow::Result<usize> {
         s.parse().with_context(|| format!("invalid integer: {s:?}"))
     }
@@ -30,6 +32,14 @@ pub fn parse(input: Input) -> anyhow::Result<Parsed> {
     }
 
     parse_elves(input).context("unable to parse elves")
+}
+
+pub fn parse1(input: Input) -> anyhow::Result<Parsed1> {
+    parse(input)
+}
+
+pub fn parse2(input: Input) -> anyhow::Result<Parsed2> {
+    parse(input)
 }
 
 #[cfg(test)]

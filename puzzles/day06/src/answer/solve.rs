@@ -2,17 +2,17 @@ use anyhow::Context;
 
 use crate::core::find_unique_window;
 
-use super::Parsed;
+use super::{Parsed1, Parsed2};
 
-pub type Solution = usize;
+type Solution = usize;
 pub type Solution1 = Solution;
 pub type Solution2 = Solution;
 
-pub fn solve1(data: &Parsed) -> anyhow::Result<Solution1> {
+pub fn solve1(data: &Parsed1) -> anyhow::Result<Solution1> {
     find_unique_window(data.iter(), 4).context("no start-of-packet marker detected")
 }
 
-pub fn solve2(data: &Parsed) -> anyhow::Result<Solution2> {
+pub fn solve2(data: &Parsed2) -> anyhow::Result<Solution2> {
     find_unique_window(data.iter(), 14).context("no start-of-message marker detected")
 }
 
@@ -20,7 +20,7 @@ pub fn solve2(data: &Parsed) -> anyhow::Result<Solution2> {
 pub mod tests {
     use aoc::Input;
 
-    use crate::answer::parse;
+    use crate::answer::{parse1, parse2};
 
     use super::{Solution1, Solution2};
 
@@ -42,7 +42,7 @@ pub mod tests {
     #[test]
     fn solve1() -> anyhow::Result<()> {
         for (input, (expected, _)) in test_cases() {
-            assert_eq!(super::solve1(&parse(input)?)?, expected);
+            assert_eq!(super::solve1(&parse1(input)?)?, expected);
         }
         Ok(())
     }
@@ -50,7 +50,7 @@ pub mod tests {
     #[test]
     fn solve2() -> anyhow::Result<()> {
         for (input, (_, expected)) in test_cases() {
-            assert_eq!(super::solve2(&parse(input)?)?, expected);
+            assert_eq!(super::solve2(&parse2(input)?)?, expected);
         }
         Ok(())
     }

@@ -2,10 +2,20 @@ use aoc::Input;
 
 use crate::core::TreePatch;
 
-pub type Parsed = TreePatch;
+type Parsed = TreePatch;
+pub type Parsed1 = Parsed;
+pub type Parsed2 = Parsed;
 
-pub fn parse(input: Input) -> anyhow::Result<Parsed> {
+fn parse(input: Input) -> anyhow::Result<Parsed> {
     TreePatch::try_from(input)
+}
+
+pub fn parse1(input: Input) -> anyhow::Result<Parsed1> {
+    parse(input)
+}
+
+pub fn parse2(input: Input) -> anyhow::Result<Parsed2> {
+    parse(input)
 }
 
 #[cfg(test)]

@@ -4,9 +4,11 @@ use aoc::Input;
 
 use crate::core::{AssignmentPair, AssignmentPairs};
 
-pub type Parsed = AssignmentPairs;
+type Parsed = AssignmentPairs;
+pub type Parsed1 = Parsed;
+pub type Parsed2 = Parsed;
 
-pub fn parse(input: Input) -> anyhow::Result<Parsed> {
+fn parse(input: Input) -> anyhow::Result<Parsed> {
     fn parse_assignment_pair(s: &str) -> anyhow::Result<AssignmentPair> {
         s.try_into().context("unable to parse assignment pair")
     }
@@ -21,6 +23,14 @@ pub fn parse(input: Input) -> anyhow::Result<Parsed> {
     }
 
     parse_assignment_pairs(input).context("unable to parse assignment pairs")
+}
+
+pub fn parse1(input: Input) -> anyhow::Result<Parsed1> {
+    parse(input)
+}
+
+pub fn parse2(input: Input) -> anyhow::Result<Parsed2> {
+    parse(input)
 }
 
 #[cfg(test)]

@@ -4,9 +4,11 @@ use aoc::Input;
 
 use crate::core::JetPush;
 
-pub type Parsed = Vec<JetPush>;
+type Parsed = Vec<JetPush>;
+pub type Parsed1 = Parsed;
+pub type Parsed2 = Parsed;
 
-pub fn parse(input: Input) -> anyhow::Result<Parsed> {
+fn parse(input: Input) -> anyhow::Result<Parsed> {
     input
         .trim()
         .chars()
@@ -16,6 +18,14 @@ pub fn parse(input: Input) -> anyhow::Result<Parsed> {
                 .with_context(|| format!("jet push number {}", i + 1))
         })
         .collect::<Result<Vec<_>, _>>()
+}
+
+pub fn parse1(input: Input) -> anyhow::Result<Parsed1> {
+    parse(input)
+}
+
+pub fn parse2(input: Input) -> anyhow::Result<Parsed2> {
+    parse(input)
 }
 
 #[cfg(test)]

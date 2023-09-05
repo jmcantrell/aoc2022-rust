@@ -4,9 +4,11 @@ use aoc::Input;
 
 use crate::core::{Movement, Procedure, Stacks};
 
-pub type Parsed = (Stacks, Procedure);
+type Parsed = (Stacks, Procedure);
+pub type Parsed1 = Parsed;
+pub type Parsed2 = Parsed;
 
-pub fn parse(input: Input) -> anyhow::Result<Parsed> {
+fn parse(input: Input) -> anyhow::Result<Parsed> {
     let mut chunks = input.split("\n\n");
 
     let stacks = Stacks::try_from(chunks.next().context("missing stacks")?)?;
@@ -19,6 +21,14 @@ pub fn parse(input: Input) -> anyhow::Result<Parsed> {
         .collect::<Result<Vec<_>, _>>()?;
 
     Ok((stacks, Procedure(movements)))
+}
+
+pub fn parse1(input: Input) -> anyhow::Result<Parsed1> {
+    parse(input)
+}
+
+pub fn parse2(input: Input) -> anyhow::Result<Parsed2> {
+    parse(input)
 }
 
 #[cfg(test)]

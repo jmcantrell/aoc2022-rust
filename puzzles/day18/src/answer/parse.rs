@@ -4,9 +4,11 @@ use aoc::Input;
 
 use crate::core::{CubeGrid, Point};
 
-pub type Parsed = CubeGrid;
+type Parsed = CubeGrid;
+pub type Parsed1 = Parsed;
+pub type Parsed2 = Parsed;
 
-pub fn parse(input: Input) -> anyhow::Result<Parsed> {
+fn parse(input: Input) -> anyhow::Result<Parsed> {
     fn parse_int(s: &str) -> anyhow::Result<isize> {
         s.parse().with_context(|| format!("invalid integer: {s:?}"))
     }
@@ -33,6 +35,14 @@ pub fn parse(input: Input) -> anyhow::Result<Parsed> {
             .collect::<Result<Vec<_>, _>>()
             .context("unable to parse points")?,
     ))
+}
+
+pub fn parse1(input: Input) -> anyhow::Result<Parsed1> {
+    parse(input)
+}
+
+pub fn parse2(input: Input) -> anyhow::Result<Parsed2> {
+    parse(input)
 }
 
 #[cfg(test)]

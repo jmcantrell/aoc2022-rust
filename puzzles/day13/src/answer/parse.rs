@@ -4,9 +4,11 @@ use aoc::Input;
 
 use crate::core::{Packet, PacketPair};
 
-pub type Parsed = Vec<PacketPair>;
+type Parsed = Vec<PacketPair>;
+pub type Parsed1 = Parsed;
+pub type Parsed2 = Parsed;
 
-pub fn parse(input: Input) -> anyhow::Result<Parsed> {
+fn parse(input: Input) -> anyhow::Result<Parsed> {
     fn parse_packet_pair(s: &str) -> anyhow::Result<PacketPair> {
         let packets = s
             .lines()
@@ -27,6 +29,14 @@ pub fn parse(input: Input) -> anyhow::Result<Parsed> {
         .enumerate()
         .map(|(i, s)| parse_packet_pair(s).with_context(|| format!("pair number {}", i + 1)))
         .collect::<Result<Vec<_>, _>>()
+}
+
+pub fn parse1(input: Input) -> anyhow::Result<Parsed1> {
+    parse(input)
+}
+
+pub fn parse2(input: Input) -> anyhow::Result<Parsed2> {
+    parse(input)
 }
 
 #[cfg(test)]

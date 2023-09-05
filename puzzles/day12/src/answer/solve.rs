@@ -2,7 +2,7 @@ use anyhow::Context;
 
 use super::{Parsed1, Parsed2};
 
-pub type Solution = usize;
+type Solution = usize;
 pub type Solution1 = Solution;
 pub type Solution2 = Solution;
 

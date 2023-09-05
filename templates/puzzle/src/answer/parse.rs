@@ -1,6 +1,6 @@
 use aoc::Input;
 
-pub type Parsed = usize;
+type Parsed = usize;
 pub type Parsed1 = Parsed;
 pub type Parsed2 = Parsed;
 

@@ -5,13 +5,13 @@ use anyhow::{anyhow, Context};
 use aoc::Input;
 
 use crate::core::{Outcome, Shape, OUTCOMES, SHAPES};
-
-pub type Key = usize;
-pub type KeyPair = (Key, Key);
 pub type Parsed1 = Vec<(Shape, Shape)>;
 pub type Parsed2 = Vec<(Shape, Outcome)>;
 
-pub const FIELD_RANGES: [RangeInclusive<char>; 2] = ['A'..='C', 'X'..='Z'];
+type Key = usize;
+type KeyPair = (Key, Key);
+
+const FIELD_RANGES: [RangeInclusive<char>; 2] = ['A'..='C', 'X'..='Z'];
 
 fn parse(input: Input) -> anyhow::Result<Vec<KeyPair>> {
     fn parse_key(s: &str, i: usize) -> anyhow::Result<Key> {

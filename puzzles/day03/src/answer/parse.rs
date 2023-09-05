@@ -4,9 +4,11 @@ use aoc::Input;
 
 use crate::core::{Priority, Rucksack, Rucksacks};
 
-pub type Parsed = Rucksacks;
+type Parsed = Rucksacks;
+pub type Parsed1 = Parsed;
+pub type Parsed2 = Parsed;
 
-pub fn parse(input: Input) -> anyhow::Result<Parsed> {
+fn parse(input: Input) -> anyhow::Result<Parsed> {
     fn parse_priority(c: char) -> anyhow::Result<Priority> {
         match c {
             'a'..='z' => Ok('a' as usize - 1),
@@ -31,6 +33,14 @@ pub fn parse(input: Input) -> anyhow::Result<Parsed> {
     }
 
     parse_rucksacks(input).context("unable to parse rucksacks")
+}
+
+pub fn parse1(input: Input) -> anyhow::Result<Parsed1> {
+    parse(input)
+}
+
+pub fn parse2(input: Input) -> anyhow::Result<Parsed2> {
+    parse(input)
 }
 
 #[cfg(test)]

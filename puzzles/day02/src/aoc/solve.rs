@@ -2,8 +2,9 @@ use anyhow::Context;
 
 use aoc::{Parse, Solve};
 
-use crate::aoc::{Parser1, Parser2};
 use crate::answer::{solve1, solve2, Solution1, Solution2};
+
+use super::{Parser1, Parser2};
 
 #[derive(Debug, Clone)]
 pub struct Solver1(pub <Parser1 as Parse>::Parsed);
