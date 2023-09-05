@@ -163,7 +163,7 @@ impl TryFrom<&str> for Map {
 
         let height = values.len() / width;
 
-        let grid = Grid::from_row_iterator(height, width, values.into_iter());
+        let grid = Grid::from_row_iterator(height, width, values);
 
         fn ensure_one_floor_tile(grid: &Grid<Tile>, row: usize) -> anyhow::Result<Location> {
             let view = grid.row(row);
