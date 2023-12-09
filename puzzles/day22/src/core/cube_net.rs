@@ -435,7 +435,7 @@ mod tests {
     }
 
     #[test]
-    fn valid_cube_nets_are_recognized() -> anyhow::Result<()> {
+    fn test_valid_cube_nets_are_recognized() -> anyhow::Result<()> {
         for (shape, net) in valid_cube_nets() {
             CubeNet::try_from(&net).with_context(|| {
                 format!("cube net shape {}:\n{}", shape + 1, describe_net(&net))
@@ -445,7 +445,7 @@ mod tests {
     }
 
     #[test]
-    fn invalid_cube_nets_are_not_recognized() -> anyhow::Result<()> {
+    fn test_invalid_cube_nets_are_not_recognized() -> anyhow::Result<()> {
         for net in invalid_cube_nets() {
             if CubeNet::try_from(&net).is_ok() {
                 return Err(anyhow!(

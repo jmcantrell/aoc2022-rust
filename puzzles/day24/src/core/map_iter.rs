@@ -171,7 +171,7 @@ mod tests {
     }
 
     #[test]
-    fn example1() {
+    fn test_example1() {
         let map = Map::try_from(
             "\
             #.#####\n\
@@ -279,7 +279,7 @@ mod tests {
     }
 
     #[test]
-    fn num_iterations_equals_inner_area() {
+    fn test_num_iterations_equals_inner_area() {
         let map = Map::try_from(
             "\
             #.##\n\

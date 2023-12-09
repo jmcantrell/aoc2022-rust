@@ -129,15 +129,17 @@ macro_rules! packet {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+
     #[test]
-    fn packet_int_ord() {
+    fn test_packet_int_ord() {
         assert!(packet!(0) < packet!(1));
         assert!(packet!(1) == packet!(1));
         assert!(packet!(1) > packet!(0));
     }
 
     #[test]
-    fn packet_list_ord() {
+    fn test_packet_list_ord() {
         assert!(packet!([]) == packet!([]));
 
         assert!(packet!([]) < packet!([0]));
@@ -149,7 +151,7 @@ mod tests {
     }
 
     #[test]
-    fn packet_int_list_ord() {
+    fn test_packet_int_list_ord() {
         assert!(packet!(0) == packet!([0]));
         assert!(packet!([0]) == packet!(0));
     }

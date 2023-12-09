@@ -269,7 +269,7 @@ mod tests {
     }
 
     #[test]
-    fn buildable_only_if_enough_time() {
+    fn test_buildable_only_if_enough_time() {
         let blueprint = example_blueprint1();
 
         macro_rules! assert_buildable {
@@ -304,7 +304,7 @@ mod tests {
     }
 
     #[test]
-    fn buildable_depending_on_resources() {
+    fn test_buildable_depending_on_resources() {
         let blueprint = example_blueprint1();
 
         macro_rules! assert_buildable {

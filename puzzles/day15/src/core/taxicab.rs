@@ -57,7 +57,7 @@ mod tests {
     }
 
     #[test]
-    fn manhattan_distance_perpendicular() {
+    fn test_manhattan_distance_perpendicular() {
         let max_dist: isize = 10;
 
         for i in -max_dist..=max_dist {
@@ -67,7 +67,7 @@ mod tests {
     }
 
     #[test]
-    fn manhattan_distance_diagonal() {
+    fn test_manhattan_distance_diagonal() {
         let dist: isize = 10;
         let half = dist / 2;
 

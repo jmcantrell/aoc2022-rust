@@ -16,17 +16,19 @@ pub fn parse2(input: Input) -> anyhow::Result<Parsed2> {
 mod tests {
     use aoc::Input;
 
+    use super::*;
+
     const INPUT: Input = include_str!("../../input-test.txt");
 
     #[test]
-    fn parse1() -> anyhow::Result<()> {
-        dbg!(super::parse1(INPUT)?);
+    fn test_parse1() -> anyhow::Result<()> {
+        dbg!(parse1(INPUT)?);
         Ok(())
     }
 
     #[test]
-    fn parse2() -> anyhow::Result<()> {
-        dbg!(super::parse2(INPUT)?);
+    fn test_parse2() -> anyhow::Result<()> {
+        dbg!(parse2(INPUT)?);
         Ok(())
     }
 }

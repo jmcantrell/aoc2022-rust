@@ -98,7 +98,7 @@ mod tests {
     }
 
     #[test]
-    fn no_tail_move() {
+    fn test_no_tail_move() {
         assert_tail!(
             [0, 0],
             "U",
@@ -117,19 +117,19 @@ mod tests {
     }
 
     #[test]
-    fn vertical_tail_move() {
+    fn test_vertical_tail_move() {
         assert_tail!([0, 1], "UU");
         assert_tail!([0, -1], "DD");
     }
 
     #[test]
-    fn horizontal_tail_move() {
+    fn test_horizontal_tail_move() {
         assert_tail!([-1, 0], "LL");
         assert_tail!([1, 0], "RR");
     }
 
     #[test]
-    fn diagonal_tail_move() {
+    fn test_diagonal_tail_move() {
         assert_tail!([-1, -1], "DLD", "LDL", "LDD", "DLL");
         assert_tail!([1, -1], "DRD", "RDR", "RDD", "DRR");
         assert_tail!([-1, 1], "ULU", "LUL", "LUU", "ULL");

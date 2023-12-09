@@ -55,18 +55,20 @@ pub mod tests {
 
     use crate::answer::{parse1, parse2};
 
+    use super::*;
+
     const INPUT: Input = include_str!("../../input-test.txt");
     const OUTPUT2: Input = include_str!("../../output-test-2.txt");
 
     #[test]
-    fn solve1() -> anyhow::Result<()> {
-        assert_eq!(super::solve1(&parse1(INPUT)?)?, 13140);
+    fn test_solve1() -> anyhow::Result<()> {
+        assert_eq!(solve1(&parse1(INPUT)?)?, 13140);
         Ok(())
     }
 
     #[test]
-    fn solve2() -> anyhow::Result<()> {
-        assert_eq!(super::solve2(&parse2(INPUT)?)?, OUTPUT2);
+    fn test_solve2() -> anyhow::Result<()> {
+        assert_eq!(solve2(&parse2(INPUT)?)?, OUTPUT2);
         Ok(())
     }
 }

@@ -24,11 +24,13 @@ pub fn parse2(input: Input) -> anyhow::Result<Parsed1> {
 mod tests {
     use aoc::Input;
 
+    use super::*;
+
     const INPUT: Input = include_str!("../../input-test.txt");
 
     #[test]
-    fn parse() -> anyhow::Result<()> {
-        dbg!(super::parse(INPUT)?);
+    fn test_parse() -> anyhow::Result<()> {
+        dbg!(parse(INPUT)?);
         Ok(())
     }
 }

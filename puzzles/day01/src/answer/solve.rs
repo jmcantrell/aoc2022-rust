@@ -23,17 +23,19 @@ pub fn solve2(elves: &Parsed2) -> anyhow::Result<Solution2> {
 mod tests {
     use crate::answer::{parse1, parse2};
 
+    use super::*;
+
     const INPUT: &str = include_str!("../../input-test.txt");
 
     #[test]
-    fn solve1() -> anyhow::Result<()> {
-        assert_eq!(super::solve1(&parse1(INPUT)?)?, 24000);
+    fn test_solve1() -> anyhow::Result<()> {
+        assert_eq!(solve1(&parse1(INPUT)?)?, 24000);
         Ok(())
     }
 
     #[test]
-    fn solve2() -> anyhow::Result<()> {
-        assert_eq!(super::solve2(&parse2(INPUT)?)?, 45000);
+    fn test_solve2() -> anyhow::Result<()> {
+        assert_eq!(solve2(&parse2(INPUT)?)?, 45000);
         Ok(())
     }
 }

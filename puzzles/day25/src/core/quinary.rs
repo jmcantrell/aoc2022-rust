@@ -195,7 +195,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn to_decimal() {
+    fn test_to_decimal() {
         macro_rules! assert_decimal {
             ($s:expr, $n:expr) => {
                 assert_eq!(Number::try_from($s).unwrap().to_decimal(), $n);
@@ -213,7 +213,7 @@ mod tests {
     }
 
     #[test]
-    fn from_decimal() {
+    fn test_from_decimal() {
         macro_rules! assert_number {
             ($n:expr, $s:expr) => {
                 assert_eq!(Number::try_from($n as usize).unwrap().to_string(), $s);
@@ -231,7 +231,7 @@ mod tests {
     }
 
     #[test]
-    fn carrying_add() {
+    fn test_carrying_add() {
         assert_eq!(Zero.carrying_add(One), (One, false));
         assert_eq!(One.carrying_add(One), (Two, false));
         assert_eq!(Two.carrying_add(One), (Three, false));

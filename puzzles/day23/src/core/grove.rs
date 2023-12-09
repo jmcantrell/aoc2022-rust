@@ -184,7 +184,7 @@ mod tests {
     const SMALL_EXAMPLE: &str = "##\n#.\n..\n##\n";
 
     #[test]
-    fn identity() {
+    fn test_identity() {
         assert_eq!(
             Grove::try_from(SMALL_EXAMPLE).unwrap().to_string(),
             SMALL_EXAMPLE

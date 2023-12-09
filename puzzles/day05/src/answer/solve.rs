@@ -22,17 +22,19 @@ pub mod tests {
 
     use crate::answer::{parse1, parse2};
 
+    use super::*;
+
     const INPUT: Input = include_str!("../../input-test.txt");
 
     #[test]
-    fn solve1() -> anyhow::Result<()> {
-        assert_eq!(super::solve1(&parse1(INPUT)?)?, "CMZ");
+    fn test_solve1() -> anyhow::Result<()> {
+        assert_eq!(solve1(&parse1(INPUT)?)?, "CMZ");
         Ok(())
     }
 
     #[test]
-    fn solve2() -> anyhow::Result<()> {
-        assert_eq!(super::solve2(&parse2(INPUT)?)?, "MCD");
+    fn test_solve2() -> anyhow::Result<()> {
+        assert_eq!(solve2(&parse2(INPUT)?)?, "MCD");
         Ok(())
     }
 }
