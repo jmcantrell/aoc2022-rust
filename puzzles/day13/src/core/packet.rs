@@ -129,8 +129,6 @@ macro_rules! packet {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     #[test]
     fn test_packet_int_ord() {
         assert!(packet!(0) < packet!(1));
