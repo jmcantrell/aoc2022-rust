@@ -3,7 +3,14 @@
 set -euo pipefail
 
 day=${1:?missing day number}
-template_dir=${2:?missing template}
+num_parts=${2:-2}
+
+template_dir=$PWD/templates/puzzle$num_parts
+
+if [[ ! -d $template_dir ]]; then
+    printf "%s: invalid template: %s\n" "$0" "${template_dir##*/}" >&2
+    exit 2
+fi
 
 printf -v name "day%02d" "$day"
 
