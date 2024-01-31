@@ -32,8 +32,8 @@ pub mod tests {
 
     use super::*;
 
-    const INPUT1: Input = include_str!("../../input-test-1.txt");
-    const INPUT2: Input = include_str!("../../input-test-2.txt");
+    const INPUT1: Input = include_str!("../../input-test-1");
+    const INPUT2: Input = include_str!("../../input-test-2");
 
     #[test]
     fn test_solve1() -> anyhow::Result<()> {

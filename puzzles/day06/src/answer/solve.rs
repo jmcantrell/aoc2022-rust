@@ -24,7 +24,7 @@ pub mod tests {
 
     use super::*;
 
-    const INPUT: Input = include_str!("../../input-test.txt");
+    const INPUT: Input = include_str!("../../input-test");
 
     fn test_cases() -> Vec<(&'static str, (Solution1, Solution2))> {
         INPUT

@@ -2,7 +2,7 @@ use aoc::{Input, Parse, Solve};
 
 use day24::aoc::{Parser1, Parser2, Solver1, Solver2};
 
-const INPUT: Input = include_str!("../input.txt");
+const INPUT: Input = include_str!("../input");
 
 fn main() -> anyhow::Result<()> {
     println!(

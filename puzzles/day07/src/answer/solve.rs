@@ -50,7 +50,7 @@ pub mod tests {
 
     use super::*;
 
-    const INPUT: Input = include_str!("../../input-test.txt");
+    const INPUT: Input = include_str!("../../input-test");
 
     #[test]
     fn test_solve1() -> anyhow::Result<()> {

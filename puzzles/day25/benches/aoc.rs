@@ -4,7 +4,7 @@ use aoc::{Input, Parse, Solve};
 
 use day25::aoc::{Parser, Solver};
 
-const INPUT: Input = include_str!("../input.txt");
+const INPUT: Input = include_str!("../input");
 
 fn benchmark<P: Parse, S: Solve<P> + Clone>(c: &mut Criterion) {
     let mut group = c.benchmark_group(stringify!(day25));
